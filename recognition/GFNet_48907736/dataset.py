@@ -11,14 +11,37 @@ After this is done, the test/train/val split will be made randomly while ensurin
 
 
 from pathlib import Path
+import shutil
 
-dir_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Unsplit\AD")
+AD_files_by_pt = {}
+CN_files_by_pt = {}
 
-def patient_id_from_path(path) -> str:
-    """'1003730_100.jpeg' -> '1003730' (everything before the last underscore)."""
-    return path.stem.rsplit("_", 1)[0]
+AD_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Unsplit/AD")
+CN_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Unsplit/CN")
 
-for file_path in dir_path.iterdir():
+def pt_id_from_path(path) -> str:
+    #'1003730_100.jpeg' -> '1003730' (everything before the last underscore)
+    return int(path.stem.rsplit("_", 1)[0])
+
+def pic_id_from_path(path) -> str:
+    #'1003730_100.jpeg' -> '100' (everything after the last underscore)
+    return int(path.stem.rsplit("_", 1)[1])
+
+# Build dictionarys by patient 
+for file_path in AD_path.iterdir():
     if file_path.is_file():
-        print(patient_id_from_path(file_path))
+        pt_id = pt_id_from_path(file_path)
+        pic_id = pic_id_from_path(file_path)
+        AD_files_by_pt.setdefault(pt_id, []).append(pic_id)
         
+for file_path in CN_path.iterdir():
+    if file_path.is_file():
+        pt_id = pt_id_from_path(file_path)
+        pic_id = pic_id_from_path(file_path)
+        CN_files_by_pt.setdefault(pt_id, []).append(pic_id)
+        
+print(AD_files_by_pt[218391])       
+
+
+destination = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Processed\val\AD")
+
