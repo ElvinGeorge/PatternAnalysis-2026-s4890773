@@ -84,7 +84,7 @@ def split_patients(patient_ids):
 # moving the files
 def move_files(AD, CN, AD_split, CN_split):
     output_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Processed")
-
+    counter = 0
     # Move images into existing folders
     for category, files_by_pt, split in [("AD", AD, AD_split), ("CN", CN, CN_split)]:
         for dataset, patients in split.items():
@@ -93,8 +93,12 @@ def move_files(AD, CN, AD_split, CN_split):
             for patient in patients:
                 for file_path in files_by_pt[patient]:
                     shutil.copy2(str(file_path), str(destination / file_path.name))
+                    counter += 1
                     
-    print("Files moved successfully")
+                    if counter % 1000 == 0:
+                        print(f"{counter} files copied")
+                    
+    print(f"{counter} files copied successfully.")
 
 
 AD_files_by_pt = dict_build(AD_path)
