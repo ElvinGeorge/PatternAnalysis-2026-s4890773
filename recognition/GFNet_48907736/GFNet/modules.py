@@ -52,3 +52,31 @@ class GFBlock(nn.Module):
 
     def forward(self, x):
         return x + self.drop_path(self.mlp(self.norm2(self.filter(self.norm1(x)))))
+    
+    
+class GFNet(nn.Module):
+    def __init__(self, img_size=224, dim=256, depth=12, drop_path_rate=0.1):
+        super().__init__()
+        self.stem = PatchEmbed(dim)
+        g = img_size // 16
+        self.pos_embed = nn.Parameter(torch.zeros(1, g, g, dim))
+        nn.init.trunc_normal_(self.pos_embed, std=0.02)
+
+        rates = [drop_path_rate * i / max(depth - 1, 1) for i in range(depth)]
+        self.blocks = nn.Sequential(*[GFBlock(dim, g, g, r) for r in rates])
+        self.norm = nn.LayerNorm(dim)
+        self.head = nn.Linear(dim, 2)
+
+    def forward(self, x):
+        x = self.stem(x) + self.pos_embed
+        x = self.blocks(x)
+        x = self.norm(x).mean(dim=(1, 2))
+        return self.head(x)
+
+
+def load_model(path, device):
+    checkpoint = torch.load(path, map_location=device)
+    model = GFNet(**checkpoint["config"]).to(device)
+    model.load_state_dict(checkpoint["state_dict"])
+    model.eval()
+    return model
