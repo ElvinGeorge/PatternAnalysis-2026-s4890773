@@ -58,6 +58,7 @@ for epoch in range(1, args.epochs + 1):
     if val_acc > best_val_acc:
         best_val_acc = val_acc
         torch.save(model.state_dict(), args.save_path)
+        print("New lowest val accuracy")
 
 print(f"Best val accuracy: {best_val_acc:.3f}")
 

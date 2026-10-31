@@ -36,3 +36,49 @@ with torch.no_grad():
         prob_ad += probs[:, 0].tolist()
 
 is_AD = [int(y == 0) for y in labels]
+
+# Confusion Matrix
+cm = confusion_matrix(labels, preds)
+recall = cm[0, 0] / cm[0].sum() # AD correctly found
+specificity = cm[1, 1] / cm[1].sum() # CN correctly found
+
+print(f"\n=== {args.split} set: {len(labels)} images ===")
+print(classification_report(labels, preds, target_names=CLASSES, digits=3))
+print(f"Accuracy:    {accuracy_score(labels, preds):.3f}")
+print(f"Macro-F1:    {f1_score(labels, preds, average='macro'):.3f}")
+print(f"Recall: {recall:.3f}")
+print(f"Specificity: {specificity:.3f}")
+print(f"AUROC:       {roc_auc_score(is_AD, prob_ad):.3f}")
+
+# Inference time 
+image = next(iter(loader))[0][:1].to(device)
+times = []
+with torch.no_grad():
+    for i in range(110):
+        if device == "cuda":
+            torch.cuda.synchronize()
+        start = time.perf_counter()
+        model(image)
+        if device == "cuda":
+            torch.cuda.synchronize()
+        if i >= 10:  # take average inference time of 100 runs excluding first 10
+            times.append((time.perf_counter() - start) * 1000)
+times.sort()
+print(f"Median Inference Time:     {times[len(times) // 2]:.2f}ms per image)")
+
+# Plots
+ConfusionMatrixDisplay(cm, display_labels=CLASSES).plot(cmap="Blues")
+plt.title(f"Confusion matrix ({args.split})")
+plt.savefig("confusion_matrix.png")
+
+RocCurveDisplay.from_predictions(is_AD, prob_ad, name="SimpleCNN")
+plt.title(f"ROC curve, AD as positive ({args.split})")
+plt.savefig("roc_curve.png")
+
+# Write all predictions for all images into an excel file
+with open("test_predictions.csv", "w") as file:
+    file.write("path,true,pred,prob_AD,correct\n")
+    for (path, _), y, p, prob in zip(loader.dataset.samples, labels, preds, prob_ad):
+        file.write(f"{path},{CLASSES[y]},{CLASSES[p]},{prob:.3f},{int(y == p)}\n")
+
+print("Done")
