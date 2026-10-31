@@ -1,0 +1,17 @@
+=== test set: 4600 images ===
+              precision    recall  f1-score   support
+
+          AD      0.796     0.877     0.835      2240
+          CN      0.871     0.787     0.827      2360
+
+    accuracy                          0.831      4600
+   macro avg      0.834     0.832     0.831      4600
+weighted avg      0.835     0.831     0.831      4600
+
+Accuracy:    0.831
+Macro-F1:    0.831
+Recall: 0.877
+Specificity: 0.787
+AUROC:       0.902
+Median Inference Time:     11.48ms per image
+Done

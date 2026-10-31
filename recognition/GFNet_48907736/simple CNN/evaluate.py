@@ -64,7 +64,7 @@ with torch.no_grad():
         if i >= 10:  # take average inference time of 100 runs excluding first 10
             times.append((time.perf_counter() - start) * 1000)
 times.sort()
-print(f"Median Inference Time:     {times[len(times) // 2]:.2f}ms per image)")
+print(f"Median Inference Time:     {times[len(times) // 2]:.2f}ms per image")
 
 # Plots
 ConfusionMatrixDisplay(cm, display_labels=CLASSES).plot(cmap="Blues")
