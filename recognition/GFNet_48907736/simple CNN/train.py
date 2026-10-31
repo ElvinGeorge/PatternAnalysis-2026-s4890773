@@ -24,7 +24,7 @@ val_loader = get_loader(args.data_root, "val")
 
 model = SimpleCNN().to(device)
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters())
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
 # Each epoch
 def run_epoch(loader, train):
@@ -47,6 +47,7 @@ def run_epoch(loader, train):
 
 # Go through epochs
 history = {"train_loss": [], "val_loss": [], "train_acc": [], "val_acc": []}
+best_val_acc = 0
 for epoch in range(1, args.epochs + 1):
     train_loss, train_acc = run_epoch(train_loader, train=True)
     val_loss, val_acc = run_epoch(val_loader, train=False)
@@ -54,17 +55,27 @@ for epoch in range(1, args.epochs + 1):
         history[key].append(value)
     print(f"Epoch {epoch}: train loss {train_loss:.3f} acc {train_acc:.3f} | val loss {val_loss:.3f} acc {val_acc:.3f}")
 
-torch.save(model.state_dict(), args.save_path)
-print(f"Saved final model to {args.save_path}")
+    if val_acc > best_val_acc:
+        best_val_acc = val_acc
+        torch.save(model.state_dict(), args.save_path)
 
-# Loss and accuracy curves
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
-ax1.plot(history["train_loss"], label="train")
-ax1.plot(history["val_loss"], label="val")
-ax1.set_title("Loss")
-ax2.plot(history["train_acc"], label="train")
-ax2.plot(history["val_acc"], label="val")
-ax2.set_title("Accuracy")
-for ax in (ax1, ax2):
-    ax.set_xlabel("Epoch")
-    ax.legend()
+print(f"Best val accuracy: {best_val_acc:.3f}")
+
+# Plots
+epochs = range(1, len(history["train_loss"]) + 1)
+
+plt.figure()
+plt.plot(epochs, history["train_loss"], label="Training")
+plt.plot(epochs, history["val_loss"], label="Validation")
+plt.xlabel("Epoch"); plt.ylabel("Loss"); plt.title("Training and validation loss")
+plt.legend()
+plt.savefig("loss_curve.png", dpi=150, bbox_inches="tight")
+
+plt.figure()
+plt.plot(epochs, history["train_acc"], label="Training")
+plt.plot(epochs, history["val_acc"], label="Validation")
+plt.xlabel("Epoch"); plt.ylabel("Accuracy"); plt.title("Training and validation accuracy")
+plt.legend()
+plt.savefig("accuracy_curve.png", dpi=150, bbox_inches="tight")
+
+print("Saved loss_curve.png and accuracy_curve.png")
