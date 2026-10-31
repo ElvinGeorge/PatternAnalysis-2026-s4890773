@@ -16,4 +16,4 @@ def get_loader(data_root, split, batch_size=64):
     steps += [transforms.ToTensor(), transforms.Normalize([0.5], [0.5])]
 
     data = datasets.ImageFolder(f"{data_root}/{split}", transform=transforms.Compose(steps))
-    return DataLoader(data, batch_size=batch_size, shuffle=(split == "train"), num_workers=2)
+    return DataLoader(data, batch_size=batch_size, shuffle=(split == "train"), num_workers=0) #change num to 4 on A100
