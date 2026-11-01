@@ -1,19 +1,19 @@
 === test set: 4600 images ===
               precision    recall  f1-score   support
 
-          AD      0.834     0.845     0.839      2240
-          CN      0.851     0.841     0.846      2360
+          AD      0.861     0.879     0.870      2240
+          CN      0.883     0.866     0.874      2360
 
-    accuracy                          0.843      4600
-   macro avg      0.842     0.843     0.843      4600
-weighted avg      0.843     0.843     0.843      4600
+    accuracy                          0.872      4600
+   macro avg      0.872     0.873     0.872      4600
+weighted avg      0.873     0.872     0.872      4600
 
-Accuracy:    0.843
-Macro-F1:    0.843
-Sensitivity: 0.845  (AD recall)
-Specificity: 0.841  (CN recall)
-AUROC:       0.916
+Accuracy:    0.872
+Macro-F1:    0.872
+Sensitivity: 0.879  (AD recall)
+Specificity: 0.866  (CN recall)
+AUROC:       0.942
 Parameters:  7,124,226
 Peak VRAM:   194.3 MB (batch of 64)
-Median Inference Time:     5.71ms per image
+Median Inference Time:     5.54ms per image
 Done
