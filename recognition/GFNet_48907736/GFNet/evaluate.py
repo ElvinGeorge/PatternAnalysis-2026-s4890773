@@ -19,7 +19,7 @@ args = parser.parse_args()
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = load_model(args.weights, device)
-loader = get_loader(args.data_root, args.split, 64)
+loader = get_loader(args.data_root, args.split)
 
 # Predict all images
 if device == "cuda":
@@ -49,7 +49,7 @@ print(f"Specificity: {specificity:.3f}  (CN recall)")
 print(f"AUROC:       {roc_auc_score(is_AD, prob_ad):.3f}")
 print(f"Parameters:  {sum(p.numel() for p in model.parameters()):,}")
 if device == "cuda":
-    print(f"Peak VRAM:   {torch.cuda.max_memory_allocated() / 1e6:.1f} MB (batch of 64)")
+    print(f"Peak VRAM:   {torch.cuda.max_memory_allocated() / 1e6:.1f} MB (batch of {loader.batch_size})")
 
 # Inference time
 image = next(iter(loader))[0][:1].to(device)

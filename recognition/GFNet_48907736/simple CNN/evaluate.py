@@ -49,6 +49,9 @@ print(f"Macro-F1:    {f1_score(labels, preds, average='macro'):.3f}")
 print(f"Recall: {recall:.3f}")
 print(f"Specificity: {specificity:.3f}")
 print(f"AUROC:       {roc_auc_score(is_AD, prob_ad):.3f}")
+print(f"Parameters:  {sum(p.numel() for p in model.parameters()):,}")
+if device == "cuda":
+    print(f"Peak VRAM:   {torch.cuda.max_memory_allocated() / 1e6:.1f} MB (batch of {loader.batch_size})")
 
 # Inference time 
 image = next(iter(loader))[0][:1].to(device)
