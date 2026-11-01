@@ -58,7 +58,7 @@ for epoch in range(1, args.epochs + 1):
     if val_acc > best_val_acc:
         best_val_acc = val_acc
         torch.save(model.state_dict(), args.save_path)
-        print("New lowest val accuracy")
+        print("New highest val accuracy")
 
 print(f"Best val accuracy: {best_val_acc:.3f}")
 
@@ -68,15 +68,19 @@ epochs = range(1, len(history["train_loss"]) + 1)
 plt.figure()
 plt.plot(epochs, history["train_loss"], label="Training")
 plt.plot(epochs, history["val_loss"], label="Validation")
-plt.xlabel("Epoch"); plt.ylabel("Loss"); plt.title("Training and validation loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.title("Training and validation loss")
 plt.legend()
-plt.savefig("loss_curve.png", dpi=150, bbox_inches="tight")
+plt.savefig("cnn_loss_curve.png", dpi=150, bbox_inches="tight")
+plt.close()
 
 plt.figure()
 plt.plot(epochs, history["train_acc"], label="Training")
 plt.plot(epochs, history["val_acc"], label="Validation")
-plt.xlabel("Epoch"); plt.ylabel("Accuracy"); plt.title("Training and validation accuracy")
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+plt.title("Training and validation accuracy")
 plt.legend()
-plt.savefig("accuracy_curve.png", dpi=150, bbox_inches="tight")
-
-print("Saved loss_curve.png and accuracy_curve.png")
+plt.savefig("cnn_accuracy_curve.png", dpi=150, bbox_inches="tight")
+plt.close()
