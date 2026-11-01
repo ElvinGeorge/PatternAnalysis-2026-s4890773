@@ -61,7 +61,7 @@ with torch.no_grad():
         model(image)
         if device == "cuda":
             torch.cuda.synchronize()
-        if i >= 10:  # take average inference time of 100 runs excluding first 10
+        if i >= 10:  # take median inference time of 100 runs excluding first 10
             times.append((time.perf_counter() - start) * 1000)
 times.sort()
 print(f"Median Inference Time:     {times[len(times) // 2]:.2f}ms per image")
@@ -69,14 +69,14 @@ print(f"Median Inference Time:     {times[len(times) // 2]:.2f}ms per image")
 # Plots
 ConfusionMatrixDisplay(cm, display_labels=CLASSES).plot(cmap="Blues")
 plt.title(f"Confusion matrix ({args.split})")
-plt.savefig("confusion_matrix.png")
+plt.savefig("CNN_confusion_matrix.png")
 
 RocCurveDisplay.from_predictions(is_AD, prob_ad, name="SimpleCNN")
 plt.title(f"ROC curve, AD as positive ({args.split})")
-plt.savefig("roc_curve.png")
+plt.savefig("CNN_roc_curve.png")
 
 # Write all predictions for all images into an excel file
-with open("test_predictions.csv", "w") as file:
+with open("CNN_test_predictions.csv", "w") as file:
     file.write("path,true,pred,prob_AD,correct\n")
     for (path, _), y, p, prob in zip(loader.dataset.samples, labels, preds, prob_ad):
         file.write(f"{path},{CLASSES[y]},{CLASSES[p]},{prob:.3f},{int(y == p)}\n")
