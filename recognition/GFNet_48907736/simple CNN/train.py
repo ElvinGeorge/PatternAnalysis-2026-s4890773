@@ -24,7 +24,8 @@ val_loader = get_loader(args.data_root, "val")
 
 model = SimpleCNN().to(device)
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=1e-2)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
 # Each epoch
 def run_epoch(loader, train):
@@ -50,6 +51,7 @@ history = {"train_loss": [], "val_loss": [], "train_acc": [], "val_acc": []}
 best_val_acc = 0
 for epoch in range(1, args.epochs + 1):
     train_loss, train_acc = run_epoch(train_loader, train=True)
+    scheduler.step()
     val_loss, val_acc = run_epoch(val_loader, train=False)
     for key, value in zip(history, [train_loss, val_loss, train_acc, val_acc]):
         history[key].append(value)
