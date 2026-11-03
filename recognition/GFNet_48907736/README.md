@@ -110,10 +110,49 @@ The data was split as 70% training, 15% validation and 15% testing. Splits were 
 
 ## Investigation
 ### Benchmarking Against CNN
+Both models were evaluated on the same test set of 4600 images (AD: 2240, CN: 2360). Both models were also trained on the same set of 21360 images (AD: 10400, CN: 10960).
 
-### Computational Efficiency
+| Metric                     | CNN baseline | GFNet        
+|----------------------------|--------------|-------------
+| Accuracy                   | 0.838        | **0.879**    
+| Macro-F1                   | 0.838        | **0.879**    
+| Recall / sensitivity (AD)  | 0.838        | **0.890**    
+| Specificity (CN)           | 0.839        | **0.868**    
+| AUROC                      | 0.910        | **0.945**    
 
-### Error Autopsies 
+### GFNet Computational Efficiency
+| Metric                          | Value
+|---------------------------------|----------
+| Parameter count                 | 7,124,226
+| Peak GPU VRAM (inference)       | 194.3 MB (batch of 64)
+| Median inference time           | 5.73 ms per image
+| Input size                      | 1 × 224 × 224 (greyscale)
+
+### GFNet Error Autopsies 
+#### High Confidence False Positive
+![High Confidence False Positive](README_images\failure-case-1177833_94.jpeg)\
+Truth: CN\
+Prediction: AD\
+P(AD): 0.998
+
+#### Medium Confidence False Positive
+![Medium Confidence False Positive](README_images\failure-case-921879_91.jpeg)\
+Truth: CN\
+Prediction: AD\
+P(AD): 0.712
+
+#### Medium Confidence False Negative
+![Medium Confidence False Negative](README_images\failure-case-1343923_105.jpeg)\
+Truth: AD\
+Prediction: CN\
+P(AD): 0.243
+
+#### High Confidence False Negative
+![High Confidence False Negative](README_images\failure-case-373618_88.jpeg)\
+Truth: AD\
+Prediction: CN\
+P(AD): 0.003
+
 
 ### Recomendations and Trade-Offs
 
