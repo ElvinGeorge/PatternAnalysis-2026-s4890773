@@ -51,34 +51,34 @@ As a whole, if the scripts were run again on any GPU, the results achieved are h
 ## Example Inputs and Outputs and Plots
 ### True Positive Case:
 The input was a AD brain MRI\
-IMAGE ID: 1005735_104\
+**IMAGE ID:** 1005735_104\
 ![True Positive](README_images\example-input-true-pos-1005735_104.jpeg)\
-Prediction made: AD\
-P(AD): 0.958\
+**Prediction made:** AD\
+**P(AD):** 0.958\
 There were 1994 images that were true postives (43.35%)
 
 ### True Negative Case:
 The input was a CN brain MRI\
-IMAGE ID: 998432_107\
+**IMAGE ID:** 998432_107\
 ![True Negative](README_images\example-input-true-neg-998432_107.jpeg)\
-Prediction made: CN\
-P(AD): 0.006\
+**Prediction made:** CN\
+**P(AD):** 0.006\
 There were 2048 images that were true negatives (44.52%)
 
 ### False Positive Case:
 The input was a CN brain MRI\
-IMAGE ID: 1084935_110\
+**IMAGE ID:** 1084935_110\
 ![False Positive](README_images\example-input-false-pos-1084935_110.jpeg)\
-Prediction made: AD\
-P(AD): 0.533\
+**Prediction made:** AD\
+**P(AD):** 0.533\
 There were 312 images that were false positives (6.78%)
 
 ### False Negative Case:
 The input was a CN brain MRI\
-IMAGE ID: 373618_86\
+**IMAGE ID:** 373618_86\
 ![False Negative](README_images\example-input-false-negative-373618_86.jpeg)\
-Prediction made: CN\
-P(AD): 0.008\
+**Prediction made:** CN\
+**P(AD):** 0.008\
 There were 246 images that were false negatives (5.35%)
 
 ### Confusion Matrix 
@@ -116,9 +116,11 @@ Both models were evaluated on the same test set of 4600 images (AD: 2240, CN: 23
 |----------------------------|--------------|-------------
 | Accuracy                   | 0.838        | **0.879**    
 | Macro-F1                   | 0.838        | **0.879**    
-| Recall / sensitivity (AD)  | 0.838        | **0.890**    
-| Specificity (CN)           | 0.839        | **0.868**    
+| Recall (AD)                | 0.838        | **0.890**    
+| Specificity                | 0.839        | **0.868**    
 | AUROC                      | 0.910        | **0.945**    
+
+The GFNet outperforms the CNN on every metric. It improves accuracy by 4.1 percentage points, from 83.8% to 87.9% and AUROC by 0.035, from 0.910 to 0.945. Recall and specificity both improve from 83.8% and 83.9% to 87.9% and 89.0%, respectively. Overall, it is evident the GFNet is superior in classifying AD vs CN brain MRIs. This difference in performance is very valuable since the increased specificity and recall mean less missed diagnosis from false negatives, and less wastage of hospital resources from false positives.
 
 ### GFNet Computational Efficiency
 | Metric                          | Value
@@ -128,33 +130,48 @@ Both models were evaluated on the same test set of 4600 images (AD: 2240, CN: 23
 | Median inference time           | 5.73 ms per image
 | Input size                      | 1 × 224 × 224 (greyscale)
 
+The GFNet has 7 124 226 parameters. On a Nvidia A100 GPU, it takes 5.73ms per slive, meaning its max throughput would be around 175 images per second. This is more than fast enough, as at 20 slices per patient, this is 524 patients a minute. The peak VRAM usage during inference is 194.3MB for a batch of 64. This means that the model can run on consumer grade GPUs easily and not hit memory limits. This low memory useage is likely since the model converts the image into a 14x14 token grid, reducing the space needed.
+
 ### GFNet Error Autopsies 
 #### High Confidence False Positive
+**IMAGE ID**: 1177833_94\
 ![High Confidence False Positive](README_images\failure-case-1177833_94.jpeg)\
-Truth: CN\
-Prediction: AD\
-P(AD): 0.998
+**Truth:** CN\
+**Prediction:** AD\
+**P(AD):** 0.998
+
+NEED TO WRITE HERE 
+
 
 #### Medium Confidence False Positive
+**IMAGE ID**: 921879_91\
 ![Medium Confidence False Positive](README_images\failure-case-921879_91.jpeg)\
-Truth: CN\
-Prediction: AD\
-P(AD): 0.712
+**Truth:** CN\
+**Prediction:** AD\
+**P(AD):** 0.712
+
+NEED TO WRITE HERE 
 
 #### Medium Confidence False Negative
+**IMAGE ID**: 1343923_105\
 ![Medium Confidence False Negative](README_images\failure-case-1343923_105.jpeg)\
-Truth: AD\
-Prediction: CN\
-P(AD): 0.243
+**Truth:** AD\
+**Prediction:** CN\
+**P(AD):** 0.243
+
+NEED TO WRITE HERE 
 
 #### High Confidence False Negative
+**IMAGE ID**: 373618_88\
 ![High Confidence False Negative](README_images\failure-case-373618_88.jpeg)\
-Truth: AD\
-Prediction: CN\
-P(AD): 0.003
+**Truth:** AD\
+**Prediction:** CN\
+**P(AD):** 0.003
 
+NEED TO WRITE HERE 
 
 ### Recomendations and Trade-Offs
+NEED TO WRITE HERE 
 
 ## AI Disclosure 
 Claude Opus 5.5 was used to generate gfnet_pipeline.png\
