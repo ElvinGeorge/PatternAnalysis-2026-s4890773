@@ -32,10 +32,22 @@ This is feasible and has been done before as stated in the previous section. The
 Risks, Budget & Fallback
 I have 80 computing credits with Google Collab, and also free access to UQ’s Rangpur Cluster. This will give me access to A100s and other GPUs to train on. The primary risk of either model is data leakage due to patients not being kept together on datasets, leading to overconfidence and inflated accuracy scores. If GFNets do not work, I can try a ConvNeXt instead.
 
-## Dependencies 
+## Dependencies and Reproducibility
+### Dependencies
+| Package      | Version |
+|--------------|---------|
+| Python       | 3.13.16 |
+| torch        | 2.11.0 (CUDA 13.0) |
+| torchvision  | 0.26.0  |
+| scikit-learn | 1.6.1   |
+| matplotlib   | 3.10.0  |
+| Pillow       | 11.3.0  |
+| pandas       | 2.2.3   |
 
-The project uses four major imports: Torch, Torchvision, Matplotlib and Scikit-learn.
-
+### Reproducibility
+The hardware used to run the models was a NVIDIA A100-SXM4-40GB. The hardware is important when it comes to reproducing model training and inference times.\
+The test train val split is reproducible since it was done with randomstate=42. Training however was not seeded, meaning that model to model variation will exist. In my testing, I have run the GFNet model 3 times on 100 epochs, and the accuracy between them was fairly consistent, ranging between 0.867 and 0.899.\
+As a whole, if the scripts were run again on any GPU, the results achieved are highly reproducible (aside for inference time unless it were run on a similarly powerful GPU).
 ## Example Inputs and Outputs and Plots
 ### True Positive Case:
 The input was a AD brain MRI\
@@ -78,7 +90,23 @@ As stated above, there were 1994 images that were true postives (43.35%), 2048 i
 ![Confusion Matrix](..\GFNet_48907736\GFNet\outputs\GFNet_accuracy_curve.png)\
 By the end of training, the model reached a validation accuracy of 87.2%, and a training accuracy of 98.9%.
 
+### ROC Curve
+![ROC Curve](..\GFNet_48907736\GFNet\outputs\GFNet_roc_curve.png)\
+By the end of training, the model reached a AUROC of accuracy of 94.5%.
+
+
 ## Preprocessing and Data Split
+### Dataset
+The dataset was provided by the course on the /home/groups/comp3710/ADNI. Within the folder, there was a test and train folder, and within each folder two classes, AD and CN. Files are named patientID_sliceNumber.jpeg.\
+There were 14860 images with AD, and 15660 that were CN. In total, there were 30520 images. There was no major class imbalance, with AD making up 48.69% of images. There were 1526 patients, with 20 images per patient.
+
+### Pre-Processing
+The AD images were pooled and so were the CN images. After that, all the images in either set were grouped by patient and then randomly split between test train and validation sets. This produced six groups of images.\
+The images were then converted to grayscale (Grayscale(1)), scaled to 244x244 (Resize((224, 224))) and finally converted to tensors and normalised (ToTensor() + Normalize([0.5], [0.5])). This was done to all images to ensure consistency amongst colour, size and scale.\
+For training, RandomHorizontalFlip() and RandomAffine(degrees=10, translate=(0.05, 0.05), scale=(0.95, 1.05)) was also applied. The reason random horizontal flips and affine transformations were applied was to reduce the chance the model was just memorising the inputs and subsequently improve generalisation. The effect of these transformations were tested when I ran a model without them and only reached 0.802 accuracy and 0.882 AUROC, compared to 0.879 accuracy and 0.945 AUROC with them. This further justified the use of these transformations.
+
+### Data Split
+The data was split as 70% training, 15% validation and 15% testing. Splits were done by patient since brainscans from the same patient are typically similar. This meant if a patient's brainscan was in the testing and training set, then the final test accuracy will be skewed. The split 70 / 15 / 15 was chosen under advice from a tutor and by this [article](https://medium.com/@kiranvutukuri/19-model-evaluation-basics-train-validation-and-test-splits-ed5bb26b088d), which stated for large dataset (>10000 items), it is better to have a larger test and validation set since the training set has enough items already. 
 
 ## Investigation
 
