@@ -5,7 +5,7 @@ Alzheimer’s disease (AD) is a neurodegenerative condition characterised by dif
 
 The goal of this algorithm is to assist clinicians by being able to analyse brain scans and identify if someone has AD or is cognitively normal (CN). It will achieve this by being able to analyse a brain MRI and determine whether the scan indicates AD or CN, and a probability of it being AD (P(AD)). The algorithm is a GFNet and works in four stages. The first step is patch embedding. The 224x224 image is split into a 16x16 grid of non-overlapping patches. Each patch is projected onto a 256-dimensional vector to produce a 14x14 grid of tokens. The next step is global filtering. The 12 GFNet blocks normalise the token and apply a 2D fast Fourier transform (FFT) on the 14x14 grid. The result is multiplied by a learnable filter and then transformed back with the inverse FFT. The third step is channel mixing. Within each block, a two-layer MLP is applied to each token to mix information across feature channels. Finally, classification occurs. After the 12 blocks, the tokens are normalised and averaged into a single 256-dimensional vector. This is mapped to two logits, and SoftMax is used to create a probability.
 
-![GFNet Pipeline](gfnet_pipeline.png)
+![GFNet Pipeline](README_images\gfnet_pipeline.png)
 
 
 ## Feasibility Review
@@ -109,7 +109,6 @@ For training, RandomHorizontalFlip() and RandomAffine(degrees=10, translate=(0.0
 The data was split as 70% training, 15% validation and 15% testing. Splits were done by patient since brainscans from the same patient are typically similar. This meant if a patient's brainscan was in the testing and training set, then the final test accuracy will be skewed. The split 70 / 15 / 15 was chosen under advice from a tutor and by this [article](https://medium.com/@kiranvutukuri/19-model-evaluation-basics-train-validation-and-test-splits-ed5bb26b088d), which stated for large dataset (>10000 items), it is better to have a larger test and validation set since the training set has enough items already. 
 
 ## Investigation
-
 ### Benchmarking Against CNN
 
 ### Computational Efficiency
@@ -119,3 +118,6 @@ The data was split as 70% training, 15% validation and 15% testing. Splits were 
 ### Recomendations and Trade-Offs
 
 ## AI Disclosure 
+Claude Opus 5.5 was used to generate gfnet_pipeline.png\
+I did this by giving it modules.py for my GFNet and asking it to generate a flow diagram that accurately outlines the model architecture.\
+I verified that the output image was correct by checking the diagram against the model structure I have made.
