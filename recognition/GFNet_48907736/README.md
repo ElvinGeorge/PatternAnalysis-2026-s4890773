@@ -32,13 +32,51 @@ This is feasible and has been done before as stated in the previous section. The
 Risks, Budget & Fallback
 I have 80 computing credits with Google Collab, and also free access to UQ’s Rangpur Cluster. This will give me access to A100s and other GPUs to train on. The primary risk of either model is data leakage due to patients not being kept together on datasets, leading to overconfidence and inflated accuracy scores. If GFNets do not work, I can try a ConvNeXt instead.
 
-
 ## Dependencies 
 
-
+The project uses four major imports: Torch, Torchvision, Matplotlib and Scikit-learn.
 
 ## Example Inputs and Outputs and Plots
+### True Positive Case:
+The input was a AD brain MRI\
+IMAGE ID: 1005735_104\
+![True Positive](README_images\example-input-true-pos-1005735_104.jpeg)\
+Prediction made: AD\
+P(AD): 0.958\
+There were 1994 images that were true postives (43.35%)
 
+### True Negative Case:
+The input was a CN brain MRI\
+IMAGE ID: 998432_107\
+![True Negative](README_images\example-input-true-neg-998432_107.jpeg)\
+Prediction made: CN\
+P(AD): 0.006\
+There were 2048 images that were true negatives (44.52%)
+
+### False Positive Case:
+The input was a CN brain MRI\
+IMAGE ID: 1084935_110\
+![False Positive](README_images\example-input-false-pos-1084935_110.jpeg)\
+Prediction made: AD\
+P(AD): 0.533\
+There were 312 images that were false positives (6.78%)
+
+### False Negative Case:
+The input was a CN brain MRI\
+IMAGE ID: 373618_86\
+![False Negative](README_images\example-input-false-negative-373618_86.jpeg)\
+Prediction made: CN\
+P(AD): 0.008\
+There were 246 images that were false negatives (5.35%)
+
+### Confusion Matrix 
+![Confusion Matrix](..\GFNet_48907736\GFNet\outputs\GFNet_confusion_matrix.png)\
+As stated above, there were 1994 images that were true postives (43.35%), 2048 images that were true negatives (44.52%), 312 images that were false positives (6.78%) and 246 images that were false negatives (5.35%).
+
+
+### Accuracy Curve
+![Confusion Matrix](..\GFNet_48907736\GFNet\outputs\GFNet_accuracy_curve.png)\
+By the end of training, the model reached a validation accuracy of 87.2%, and a training accuracy of 98.9%.
 
 ## Preprocessing and Data Split
 
