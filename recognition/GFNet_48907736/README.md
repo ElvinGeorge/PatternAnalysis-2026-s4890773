@@ -122,15 +122,17 @@ Both models were evaluated on the same test set of 4600 images (AD: 2240, CN: 23
 
 The GFNet outperforms the CNN on every metric. It improves accuracy by 4.1 percentage points, from 83.8% to 87.9% and AUROC by 0.035, from 0.910 to 0.945. Recall and specificity both improve from 83.8% and 83.9% to 87.9% and 89.0%, respectively. Overall, it is evident the GFNet is superior in classifying AD vs CN brain MRIs. This difference in performance is very valuable since the increased specificity and recall mean less missed diagnosis from false negatives, and less wastage of hospital resources from false positives.
 
-### GFNet Computational Efficiency
-| Metric                          | Value
-|---------------------------------|----------
-| Parameter count                 | 7,124,226
-| Peak GPU VRAM (inference)       | 194.3 MB (batch of 64)
-| Median inference time           | 5.73 ms per image
-| Input size                      | 1 × 224 × 224 (greyscale)
+### Computational Efficiency
+Models were trained and evaluated on a Nvidia A100 40GB GPU.
 
-The GFNet has 7 124 226 parameters. On a Nvidia A100 GPU, it takes 5.73ms per slive, meaning its max throughput would be around 175 images per second. This is more than fast enough, as at 20 slices per patient, this is 524 patients a minute. The peak VRAM usage during inference is 194.3MB for a batch of 64. This means that the model can run on consumer grade GPUs easily and not hit memory limits. This low memory useage is likely since the model converts the image into a 14x14 token grid, reducing the space needed.
+| Metric                       | CNN baseline              | GFNet                 
+|------------------------------|---------------------------|----------
+| Parameter count              | **389,314**               | 7,124,226
+| Peak GPU VRAM (batch of 64)  | 846.1 MB                  | **194.3 MB**
+| Median inference time        | **0.83 ms** per image     | 5.73 ms per image
+| Input size                   | 1 × 224 × 224 (greyscale) | 1 × 224 × 224 (greyscale)
+
+The GFNet has 7 124 226 parameters compared to only 389 314 on the baseline CNN. On a Nvidia A100 GPU, the GFNet takes 5.73ms per slice, meaning its max throughput would be around 175 images per second. This is more than fast enough, as at 20 slices per patient, this is 524 patients a minute. Although the CNN is significantly faster at 0.83ms per image, this extra speed is not necessary. The peak VRAM usage during inference is 194.3MB for the GFNet and 846.1MB for the CNN (with a batch of 64). Although this means that both models can run on consumer grade GPUs easily and not hit memory limits, the GFNet is significantly more efficient. This low memory usage is likely since the model converts the image into a 14x14 token grid, reducing the space needed. To summarise, both models are computationally efficient, with the CNN holding the advantage with less parameters, while the GFNet requires less VRAM during inference.
 
 ### GFNet Error Autopsies 
 #### High Confidence False Positive
@@ -171,7 +173,13 @@ NEED TO WRITE HERE
 NEED TO WRITE HERE 
 
 ### Recomendations and Trade-Offs
-NEED TO WRITE HERE 
+**Accuracy vs Cost:** Although the GFNet has an accurac y4.1 percentage points higher (from 83.8% to 87.9%), this comes at the cost of ~18x more parameters and ~7x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 5.73ms per slice, it could process 524 patients a minute which is more than enough. Additionally, the increase in specificity from 83.9% to 89.0% is significant since it directly means there are less false postives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 83.8% to 87.9% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
+
+**Decision Threshold:** The decision threshold is currently set as P(AD) > 0.5. This is a tradeoff since by decreasing it, although there will be less false negatives, there will be more false positives. False negatives, however, are far less impactful then false postives since they just lead to extra testing (as compared to a missed diagnosis). Thus, the decision threshold should be lowered. The high AUROC of 0.945 supports this trade-off, so the threshold should be reduced based on the resources available to handle false positives.
+
+**Slice Level Prediction:** The model classifies per slice, however diagnosis happen at the per patient level. P(AD) should be averaged across all 20 slices per patient to determine the diagnosis. This would produce more stable and reliable predictions.
+
+**Incorporating PET Scans:** The study by [Xu et.al. in 2025](https://dl.acm.org/doi/full/10.1145/3715931.3715943) improved accuracy with CN vs AD from 92.53% with just MRI scans, to 98.91% with a modified GFNet that uses PET scans and MRI scans. By modifying my model to also use PET scan data, the accuracy, recall and specificity can all likely be improved. 
 
 ## AI Disclosure 
 Claude Opus 5.5 was used to generate gfnet_pipeline.png\
