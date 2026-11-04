@@ -1,5 +1,6 @@
 """
-For single images at a time
+Makes predictions using a given model for any given image
+
 python predict.py --weights cnn.pt image1.jpeg image2.jpeg
 """
 import argparse
@@ -11,16 +12,19 @@ from torchvision import transforms
 from dataset import CLASSES
 from modules import SimpleCNN
 
+# Argument parsing
 parser = argparse.ArgumentParser()
 parser.add_argument("images", nargs="+")
 parser.add_argument("--weights", default="best_cnn.pt")
 args = parser.parse_args()
 
+# Use a GPU if possible
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = SimpleCNN().to(device)
 model.load_state_dict(torch.load(args.weights, map_location=device))
 model.eval()
 
+# Same preprocessing as the val/test loader in dataset.py
 transform = transforms.Compose([
     transforms.Grayscale(1),
     transforms.Resize((224, 224)),
@@ -28,6 +32,7 @@ transform = transforms.Compose([
     transforms.Normalize([0.5], [0.5]),
 ])
 
+# Make predictions using the model
 with torch.no_grad():
     for path in args.images:
         image = transform(Image.open(path)).unsqueeze(0).to(device)

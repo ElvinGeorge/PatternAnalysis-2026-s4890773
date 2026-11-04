@@ -158,7 +158,7 @@ Both models were evaluated on the same test set of 4600 images (AD: 2240, CN: 23
 | Specificity                | 0.839        | **0.868**    
 | AUROC                      | 0.910        | **0.945**    
 
-The GFNet outperforms the CNN on every metric. It improves accuracy by 4.1 percentage points, from 83.8% to 87.9% and AUROC by 0.035, from 0.910 to 0.945. Recall and specificity both improve from 83.8% and 83.9% to 87.9% and 89.0%, respectively. Overall, it is evident the GFNet is superior in classifying AD vs CN brain MRIs. This difference in performance is very valuable since the increased specificity and recall mean less missed diagnosis from false negatives, and less wastage of hospital resources from false positives.
+The GFNet outperforms the CNN on every metric. It improves accuracy by 4.1 percentage points, from 83.8% to 87.9% and AUROC by 0.035, from 0.910 to 0.945. Recall and specificity both improve from 83.8% to 89.0% and from 83.9% to 86.8%, respectively. Overall, it is evident the GFNet is superior in classifying AD vs CN brain MRIs. This difference in performance is very valuable since the increased specificity and recall mean less missed diagnosis from false negatives, and less wastage of hospital resources from false positives.
 
 ### Computational Efficiency
 Models were trained and evaluated on a Nvidia A100 40GB GPU.
@@ -215,7 +215,7 @@ Based of these four examples, it seems that some false positives may be related 
 ### Recommendations and Trade-Offs
 **Accuracy vs Cost:** Although the GFNet has an accuracy 4.1 percentage points higher (from 83.8% to 87.9%), this comes at the cost of ~18x more parameters and ~7x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 5.73ms per slice, it could process 524 patients a minute which is more than enough. Additionally, the increase in specificity from 83.9% to 89.0% is significant since it directly means there are less false postives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 83.8% to 87.9% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
 
-**Decision Threshold:** The decision threshold is currently set as P(AD) > 0.5. This is a tradeoff since by decreasing it, although there will be less false negatives, there will be more false positives. False negatives, however, are far less impactful then false postives since they just lead to extra testing (as compared to a missed diagnosis). Thus, the decision threshold should be lowered. The high AUROC of 0.945 supports this trade-off, so the threshold should be reduced based on the resources available to handle false positives.
+**Decision Threshold:** The decision threshold is currently set as P(AD) > 0.5. This is a tradeoff since by decreasing it, although there will be less false negatives, there will be more false positives. False positives, however, are far less impactful then false negatives since they just lead to extra testing (as compared to a missed diagnosis). Thus, the decision threshold should be lowered. The high AUROC of 0.945 supports this trade-off, so the threshold should be reduced based on the resources available to handle false positives.
 
 **Slice Level Prediction:** The model classifies per slice, however diagnosis happen at the per patient level. P(AD) should be averaged across all 20 slices per patient to determine the diagnosis. This would produce more stable and reliable predictions.
 

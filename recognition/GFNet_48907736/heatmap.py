@@ -1,4 +1,7 @@
 """
+This file creates a Grad-CAM and gradient x input visual over any input image using the specified model.
+Note that the model is not in the repo due to the rules.
+
 python heatmap.py --weights GFNet/outputs/gfnet.pt <image location>.jpeg
 """
 import argparse

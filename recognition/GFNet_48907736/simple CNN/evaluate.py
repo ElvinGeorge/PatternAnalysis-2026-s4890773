@@ -1,5 +1,7 @@
 """
-Evaluates the saved model on the test set
+Evaluates the saved model on the test set or validation set.
+It saves a confusion matrix and ROC curve, prints out metrics, and writes predictions to a CSV
+
 python evaluate.py --data-root "C:/Users/elvin/OneDrive/Desktop/UQ/Year 3, Semester 2/COMP3710/Final Project/ADNI_Processed" --weights cnn.pt
 """
 import argparse
@@ -10,24 +12,29 @@ from sklearn.metrics import (ConfusionMatrixDisplay, RocCurveDisplay, accuracy_s
 from dataset import CLASSES, get_loader
 from modules import SimpleCNN
 
+# Argument parsing
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-root", required=True)
 parser.add_argument("--weights", default="cnn.pt")
 parser.add_argument("--split", default="test") # test or val set
 args = parser.parse_args()
 
+# Use a GPU if possible
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = SimpleCNN().to(device)
 model.load_state_dict(torch.load(args.weights, map_location=device))
 model.eval()
 
+# Load images
 loader = get_loader(args.data_root, args.split)
 
-# Predict all images
 if device == "cuda":
     torch.cuda.reset_peak_memory_stats()
 
-labels, preds, prob_ad = [], [], []
+
+labels, preds, prob_ad = [], [], [] # Keep track of for stats
+
+# Predict all images in the data loader
 with torch.no_grad():
     for images, y in loader:
         probs = torch.softmax(model(images.to(device)), dim=1).cpu()
@@ -42,6 +49,7 @@ cm = confusion_matrix(labels, preds)
 recall = cm[0, 0] / cm[0].sum() # AD correctly found
 specificity = cm[1, 1] / cm[1].sum() # CN correctly found
 
+# Statistics
 print(f"\n=== {args.split} set: {len(labels)} images ===")
 print(classification_report(labels, preds, target_names=CLASSES, digits=3))
 print(f"Accuracy:    {accuracy_score(labels, preds):.3f}")
@@ -65,15 +73,18 @@ with torch.no_grad():
         if device == "cuda":
             torch.cuda.synchronize()
         if i >= 10:  # take median inference time of 100 runs excluding first 10
+            # This is because the first 10 can be slow
             times.append((time.perf_counter() - start) * 1000)
 times.sort()
 print(f"Median Inference Time:     {times[len(times) // 2]:.2f}ms per image")
 
 # Plots
+# Confusion Matrix
 ConfusionMatrixDisplay(cm, display_labels=CLASSES).plot(cmap="Blues")
 plt.title(f"Confusion matrix ({args.split})")
 plt.savefig("CNN_confusion_matrix.png")
 
+# ROC Curve
 RocCurveDisplay.from_predictions(is_AD, prob_ad, name="SimpleCNN")
 plt.title(f"ROC curve, AD as positive ({args.split})")
 plt.savefig("CNN_roc_curve.png")

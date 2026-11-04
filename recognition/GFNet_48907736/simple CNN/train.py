@@ -1,4 +1,7 @@
 """
+Trains the CNN model and save the weights that produce the best validation accuracy
+It saves loss and accuracy curves.
+
 python train.py --data-root "C:/Users/elvin/OneDrive/Desktop/UQ/Year 3, Semester 2/COMP3710/Final Project/ADNI_Processed" --epochs 20
 """
 import argparse
@@ -10,28 +13,33 @@ from torch import nn
 from dataset import get_loader
 from modules import SimpleCNN
 
+# Argument parsing
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-root", required=True)
 parser.add_argument("--epochs", type=int, default=20)
 parser.add_argument("--save-path", default="cnn.pt")
 args = parser.parse_args()
 
+# Use a GPU if possible
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print("Using", device)
 
 train_loader = get_loader(args.data_root, "train")
 val_loader = get_loader(args.data_root, "val")
 
+# Model uses ADAM with weight decay
 model = SimpleCNN().to(device)
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=1e-2)
+# Cosine scheduler decays the learning rate smoothly
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
-# Each epoch
+# What happens for each epoch
 def run_epoch(loader, train):
     model.train(train)
     total_loss, correct, count = 0, 0, 0
     with torch.set_grad_enabled(train):
+        # Go through the slices
         for images, labels in loader:
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
@@ -45,10 +53,11 @@ def run_epoch(loader, train):
             count += len(labels)
     return total_loss / count, correct / count
 
-
-# Go through epochs
+# Track these stats to make graphs at the end
 history = {"train_loss": [], "val_loss": [], "train_acc": [], "val_acc": []}
 best_val_acc = 0
+
+# Go through the epochs
 for epoch in range(1, args.epochs + 1):
     train_loss, train_acc = run_epoch(train_loader, train=True)
     scheduler.step()
@@ -57,6 +66,7 @@ for epoch in range(1, args.epochs + 1):
         history[key].append(value)
     print(f"Epoch {epoch}: train loss {train_loss:.3f} acc {train_acc:.3f} | val loss {val_loss:.3f} acc {val_acc:.3f}")
 
+    # Keep the model that performs the best on the val set
     if val_acc > best_val_acc:
         best_val_acc = val_acc
         torch.save(model.state_dict(), args.save_path)
@@ -67,6 +77,7 @@ print(f"Best val accuracy: {best_val_acc:.3f}")
 # Plots
 epochs = range(1, len(history["train_loss"]) + 1)
 
+# Training loss and validation loss vs number of epochs
 plt.figure()
 plt.plot(epochs, history["train_loss"], label="Training")
 plt.plot(epochs, history["val_loss"], label="Validation")
@@ -77,6 +88,7 @@ plt.legend()
 plt.savefig("CNN_loss_curve.png", dpi=150, bbox_inches="tight")
 plt.close()
 
+# Training accuracy and validation accuracy vs number of epochs
 plt.figure()
 plt.plot(epochs, history["train_acc"], label="Training")
 plt.plot(epochs, history["val_acc"], label="Validation")
