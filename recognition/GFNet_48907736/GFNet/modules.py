@@ -6,6 +6,8 @@ from torch import nn
 
 
 class PatchEmbed(nn.Module):
+    # Splits the image into 16x16 patches
+    # It then projects each patch onto a dim-length vector
     def __init__(self, dim=256):
         super().__init__()
         self.proj = nn.Conv2d(1, dim, kernel_size=16, stride=16)
@@ -15,21 +17,26 @@ class PatchEmbed(nn.Module):
 
 
 class GlobalFilter(nn.Module):
+    # Mixes info between all patches by multiplying learned filter in freq space
     def __init__(self, dim, h=14, w=14):
         super().__init__()
+        # One complex weight per freq and channel
         self.complex_weight = nn.Parameter(torch.randn(h, w // 2 + 1, dim, 2) * 0.02)
 
     def forward(self, x):
         H, W = x.shape[1:3]
         dtype = x.dtype
         with torch.autocast(device_type=x.device.type, enabled=False):
-            X = torch.fft.rfft2(x.float(), dim=(1, 2), norm="ortho")
-            X = X * torch.view_as_complex(self.complex_weight)
-            x = torch.fft.irfft2(X, s=(H, W), dim=(1, 2), norm="ortho")
+            X = torch.fft.rfft2(x.float(), dim=(1, 2), norm="ortho") # Fast fourier transform
+            X = X * torch.view_as_complex(self.complex_weight) 
+            x = torch.fft.irfft2(X, s=(H, W), dim=(1, 2), norm="ortho") # Inverse fast fourier transform
         return x.to(dtype)
 
 
 class DropPath(nn.Module):
+    # Randomly skips a blocks residual path for a sample during training
+    # Improves model generalisations
+    
     def __init__(self, p=0.0):
         super().__init__()
         self.p = p
@@ -38,10 +45,11 @@ class DropPath(nn.Module):
         if not self.training or self.p == 0:
             return x
         keep = torch.rand(x.shape[0], 1, 1, 1, device=x.device) >= self.p
-        return x * keep / (1 - self.p)
+        return x * keep / (1 - self.p) # Rescales
 
 
 class GFBlock(nn.Module):
+    # LayerNorm -> global filter -> LayerNorm -> MLP (wrapped in a residual connection)
     def __init__(self, dim, h, w, drop_path=0.0):
         super().__init__()
         self.norm1 = nn.LayerNorm(dim)
@@ -51,17 +59,22 @@ class GFBlock(nn.Module):
         self.drop_path = DropPath(drop_path)
 
     def forward(self, x):
+        # A residual around the whole block
         return x + self.drop_path(self.mlp(self.norm2(self.filter(self.norm1(x)))))
     
     
 class GFNet(nn.Module):
+    # Patch embedding and postional embedding, a stack of blocks,
+    # then a global average pooling and linear head
     def __init__(self, img_size=224, dim=256, depth=12, drop_path_rate=0.1):
         super().__init__()
         self.stem = PatchEmbed(dim)
-        g = img_size // 16
+        g = img_size // 16 # Creates a 14x14 grid of patches
         self.pos_embed = nn.Parameter(torch.zeros(1, g, g, dim))
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
 
+        # Drop path rate increases linearly from 0 in the first block to drop_path_rate in last block
+        # More dropping in later blocks
         rates = [drop_path_rate * i / max(depth - 1, 1) for i in range(depth)]
         self.blocks = nn.Sequential(*[GFBlock(dim, g, g, r) for r in rates])
         self.norm = nn.LayerNorm(dim)
@@ -70,11 +83,12 @@ class GFNet(nn.Module):
     def forward(self, x):
         x = self.stem(x) + self.pos_embed
         x = self.blocks(x)
-        x = self.norm(x).mean(dim=(1, 2))
+        x = self.norm(x).mean(dim=(1, 2)) # Average across all 14x14 patches
         return self.head(x)
 
 
 def load_model(path, device):
+    # Loads model
     checkpoint = torch.load(path, map_location=device)
     model = GFNet(**checkpoint["config"]).to(device)
     model.load_state_dict(checkpoint["state_dict"])

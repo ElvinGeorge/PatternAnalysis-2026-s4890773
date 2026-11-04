@@ -89,7 +89,7 @@ RocCurveDisplay.from_predictions(is_AD, prob_ad, name="SimpleCNN")
 plt.title(f"ROC curve, AD as positive ({args.split})")
 plt.savefig("CNN_roc_curve.png")
 
-# Write all predictions for all images into an excel file
+# Write all predictions for all images into a CSV
 with open("CNN_test_predictions.csv", "w") as file:
     file.write("path,true,pred,prob_AD,correct\n")
     for (path, _), y, p, prob in zip(loader.dataset.samples, labels, preds, prob_ad):

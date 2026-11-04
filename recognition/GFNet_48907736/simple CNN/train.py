@@ -48,6 +48,7 @@ def run_epoch(loader, train):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+            # Need to weight by batch size since the last one will be smaller
             total_loss += loss.item() * len(labels)
             correct += (outputs.argmax(1) == labels).sum().item()
             count += len(labels)
