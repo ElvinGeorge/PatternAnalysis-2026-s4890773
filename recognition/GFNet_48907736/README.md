@@ -5,7 +5,7 @@ Alzheimer’s disease (AD) is a neurodegenerative condition characterised by dif
 
 The goal of this algorithm is to assist clinicians by being able to analyse brain scans and identify if someone has AD or is cognitively normal (CN). It will achieve this by being able to analyse a brain MRI and determine whether the scan indicates AD or CN, and a probability of it being AD (P(AD)). The algorithm is a GFNet and works in four stages. The first step is patch embedding. The 224x224 image is split into a 16x16 grid of non-overlapping patches. Each patch is projected onto a 256-dimensional vector to produce a 14x14 grid of tokens. The next step is global filtering. The 12 GFNet blocks normalise the token and apply a 2D fast Fourier transform (FFT) on the 14x14 grid. The result is multiplied by a learnable filter and then transformed back with the inverse FFT. The third step is channel mixing. Within each block, a two-layer MLP is applied to each token to mix information across feature channels. Finally, classification occurs. After the 12 blocks, the tokens are normalised and averaged into a single 256-dimensional vector. This is mapped to two logits, and SoftMax is used to create a probability.
 
-![GFNet Pipeline](README_images\gfnet_pipeline.png)
+![GFNet Pipeline](README_images/gfnet_pipeline.png)
 
 
 ## Feasibility Review
@@ -52,7 +52,7 @@ As a whole, if the scripts were run again on any GPU, the results achieved are h
 ### True Positive Case:
 The input was a AD brain MRI\
 **IMAGE ID:** 1005735_104\
-![True Positive](README_images\example-input-true-pos-1005735_104.jpeg)\
+![True Positive](README_images/example-input-true-pos-1005735_104.jpeg)\
 **Prediction made:** AD\
 **P(AD):** 0.958\
 There were 1994 images that were true postives (43.35%)
@@ -60,7 +60,7 @@ There were 1994 images that were true postives (43.35%)
 ### True Negative Case:
 The input was a CN brain MRI\
 **IMAGE ID:** 998432_107\
-![True Negative](README_images\example-input-true-neg-998432_107.jpeg)\
+![True Negative](README_images/example-input-true-neg-998432_107.jpeg)\
 **Prediction made:** CN\
 **P(AD):** 0.006\
 There were 2048 images that were true negatives (44.52%)
@@ -68,7 +68,7 @@ There were 2048 images that were true negatives (44.52%)
 ### False Positive Case:
 The input was a CN brain MRI\
 **IMAGE ID:** 1084935_110\
-![False Positive](README_images\example-input-false-pos-1084935_110.jpeg)\
+![False Positive](README_images/example-input-false-pos-1084935_110.jpeg)\
 **Prediction made:** AD\
 **P(AD):** 0.533\
 There were 312 images that were false positives (6.78%)
@@ -76,22 +76,22 @@ There were 312 images that were false positives (6.78%)
 ### False Negative Case:
 The input was a CN brain MRI\
 **IMAGE ID:** 373618_86\
-![False Negative](README_images\example-input-false-negative-373618_86.jpeg)\
+![False Negative](README_images/example-input-false-negative-373618_86.jpeg)\
 **Prediction made:** CN\
 **P(AD):** 0.008\
 There were 246 images that were false negatives (5.35%)
 
 ### Confusion Matrix 
-![Confusion Matrix](..\GFNet_48907736\GFNet\outputs\GFNet_confusion_matrix.png)\
+![Confusion Matrix](../GFNet_48907736/GFNet/outputs/GFNet_confusion_matrix.png)\
 As stated above, there were 1994 images that were true postives (43.35%), 2048 images that were true negatives (44.52%), 312 images that were false positives (6.78%) and 246 images that were false negatives (5.35%).
 
 
 ### Accuracy Curve
-![Confusion Matrix](..\GFNet_48907736\GFNet\outputs\GFNet_accuracy_curve.png)\
+![Confusion Matrix](../GFNet_48907736/GFNet/outputs/GFNet_accuracy_curve.png)\
 By the end of training, the model reached a validation accuracy of 87.2%, and a training accuracy of 98.9%.
 
 ### ROC Curve
-![ROC Curve](..\GFNet_48907736\GFNet\outputs\GFNet_roc_curve.png)\
+![ROC Curve](../GFNet_48907736/GFNet/outputs/GFNet_roc_curve.png)\
 By the end of training, the model reached a AUROC of accuracy of 94.5%.
 
 
@@ -137,43 +137,42 @@ The GFNet has 7 124 226 parameters compared to only 389 314 on the baseline CNN.
 ### GFNet Error Autopsies 
 #### High Confidence False Positive
 **IMAGE ID**: 1177833_94\
-![High Confidence False Positive](README_images\GFNet_heatmap_1177833_94.png)\
+![High Confidence False Positive](README_images/GFNet_heatmap_1177833_94.png)\
 **Truth:** CN\
 **Prediction:** AD\
 **P(AD):** 0.998
 
-NEED TO WRITE HERE 
-
+For this slice, the model was extremely confident that the slice had AD, producing a high P(AD) of 0.998. The slice itself is unremarkable since the sulci are narrow and the lateral ventricle is not visibly enlarged. The Grad-CAM map shows that most of the decision came from the black background rather than the brain itself. Gradient x input is spread over the cerebullum and frontal cortex. This information potentially points to the model reading the empty size around the brain for some shortcut indicating an issue in the model.
 
 #### Medium Confidence False Positive
 **IMAGE ID**: 921879_91\
-![Medium Confidence False Positive](README_images\GFNet_heatmap_921879_91.png)\
+![Medium Confidence False Positive](README_images/GFNet_heatmap_921879_91.png)\
 **Truth:** CN\
 **Prediction:** AD\
 **P(AD):** 0.712
 
-NEED TO WRITE HERE 
-
-
-#### Medium Confidence False Negative
-**IMAGE ID**: 1343923_105\
-![Medium Confidence False Negative](README_images\GFNet_heatmap_1343923_105.png)\
-**Truth:** AD\
-**Prediction:** CN\
-**P(AD):** 0.243
-
-NEED TO WRITE HERE
-
+For this slice, the model was fairly confident that the slice had AD with a P(AD) of 0.712. Similarly to the previous error autopsy, the Grad-CAM shows the model was looking into the black background rather than the brain. Gradient x input is focused on the cerebellum and brainstem. There is no obvious enlargement of the ventricle or widening of the sulci. This case, like the previous one, suggests there is an error in the model causing it to look at the black background over the brain for some cases.
 
 #### High Confidence False Negative
 **IMAGE ID**: 373618_88\
-![High Confidence False Negative](README_images\GFNet_heatmap_373618_88.png)\
+![High Confidence False Negative](README_images/GFNet_heatmap_373618_88.png)\
 **Truth:** AD\
 **Prediction:** CN\
 **P(AD):** 0.003
 
-NEED TO WRITE HERE 
+This slice had AD but the model predicted CN with a P(AD) of only 0.003. This means the model was very confident in its prediction. Unlike the previous false positives, the Grad-CAM and gradient x input shows that the model is looking primarily into the brain. Its focus is on the cerebellum and occipital lobe, with a few hotspots in other places. Observing the image, the ventricle does not seem enlarge, and the sulci do not seem widened. It is likely that for this patient, this slice in particular did not show these features, but others did. To fix this, patient level predictions should be made over slice level
 
+#### Medium Confidence False Negative
+**IMAGE ID**: 1343923_105\
+![Medium Confidence False Negative](README_images/GFNet_heatmap_1343923_105.png)\
+**Truth:** AD\
+**Prediction:** CN\
+**P(AD):** 0.243
+
+This slice had AD, however the model believed it was CN with a P(AD) of 0.243. Grad-CAM and gradient x input shows that the model is looking primarily into the brain. Most of the focus is on the cerebellum, brainstem and ventricle. With this image, there is noticeably less contrast then other slices. It is likely the model did not pick up on the atrophy because of that, and it led it to make a medium confidence CN prediction.
+
+### Overall Autopsy Takeaway and Recomendations
+Based of these four examples, it seems that some false positives may be related to something about the background or the size of the background. This could be because a large background indicates a smaller brain. This is commonly associated with AD, and could indicate to the model that the slice had AD. To fix this, background masking could be used. For false negatives, it is possible that contrast issues or slices where atrophy isn't obvious lead to a CN prediction. To fix this, patient level predictions should be made.
 
 ### Recomendations and Trade-Offs
 **Accuracy vs Cost:** Although the GFNet has an accuracy 4.1 percentage points higher (from 83.8% to 87.9%), this comes at the cost of ~18x more parameters and ~7x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 5.73ms per slice, it could process 524 patients a minute which is more than enough. Additionally, the increase in specificity from 83.9% to 89.0% is significant since it directly means there are less false postives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 83.8% to 87.9% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
