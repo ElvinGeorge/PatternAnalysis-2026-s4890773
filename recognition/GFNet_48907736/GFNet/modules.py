@@ -6,8 +6,10 @@ from torch import nn
 
 
 class PatchEmbed(nn.Module):
-    # Splits the image into 16x16 patches
-    # It then projects each patch onto a dim-length vector
+    """
+    Splits the image into 16x16 patches
+    It then projects each patch onto a dim-length vector
+    """
     def __init__(self, dim=256):
         super().__init__()
         self.proj = nn.Conv2d(1, dim, kernel_size=16, stride=16)
@@ -17,7 +19,9 @@ class PatchEmbed(nn.Module):
 
 
 class GlobalFilter(nn.Module):
-    # Mixes info between all patches by multiplying learned filter in freq space
+    """
+    Mixes info between all patches by multiplying learned filter in freq space
+    """
     def __init__(self, dim, h=14, w=14):
         super().__init__()
         # One complex weight per freq and channel
@@ -34,8 +38,10 @@ class GlobalFilter(nn.Module):
 
 
 class DropPath(nn.Module):
-    # Randomly skips a blocks residual path for a sample during training
-    # Improves model generalisations
+    """
+    Randomly skips a blocks residual path for a sample during training
+    Improves model generalisations
+    """
     
     def __init__(self, p=0.0):
         super().__init__()
@@ -49,7 +55,10 @@ class DropPath(nn.Module):
 
 
 class GFBlock(nn.Module):
-    # LayerNorm -> global filter -> LayerNorm -> MLP (wrapped in a residual connection)
+    """
+    Structure of each GFBlock
+    LayerNorm -> global filter -> LayerNorm -> MLP (wrapped in a residual connection)
+    """
     def __init__(self, dim, h, w, drop_path=0.0):
         super().__init__()
         self.norm1 = nn.LayerNorm(dim)
@@ -64,8 +73,11 @@ class GFBlock(nn.Module):
     
     
 class GFNet(nn.Module):
-    # Patch embedding and postional embedding, a stack of blocks,
-    # then a global average pooling and linear head
+    """
+    Creating the actual model.
+    Structure follows a patch embedding and postional embedding, a stack of blocks,
+    then a global average pooling and linear head
+    """
     def __init__(self, img_size=224, dim=256, depth=12, drop_path_rate=0.1):
         super().__init__()
         self.stem = PatchEmbed(dim)
@@ -88,7 +100,7 @@ class GFNet(nn.Module):
 
 
 def load_model(path, device):
-    # Loads model
+    """Loads the model"""
     checkpoint = torch.load(path, map_location=device)
     model = GFNet(**checkpoint["config"]).to(device)
     model.load_state_dict(checkpoint["state_dict"])

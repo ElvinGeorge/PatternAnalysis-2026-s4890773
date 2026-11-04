@@ -4,8 +4,11 @@ Simple CNN. Outputs either 0 = AD, 1 = CN.
 from torch import nn
 
 def conv_block(in_ch, out_ch):
-    # Conv -> BatchNorm -> ReLU -> MaxPool
-    # Each block halves the spatial size
+    """
+    Structure of each conv block for the CNN
+    Conv -> BatchNorm -> ReLU -> MaxPool
+    Each block halves the spatial size
+    """
     return nn.Sequential(
         nn.Conv2d(in_ch, out_ch, kernel_size=3, padding=1),
         nn.BatchNorm2d(out_ch),
@@ -15,8 +18,12 @@ def conv_block(in_ch, out_ch):
 
 
 class SimpleCNN(nn.Module):
-    # Four conv blocks then a global average pooling and linear classifier
+    """
+    This creates the CNN
+    It is four conv blocks then a global average pooling and linear classifier
+    """
     def __init__(self, num_classes=2):
+        """Implements structure"""
         super().__init__()
         self.features = nn.Sequential(
             # Four conv blocks
@@ -34,5 +41,5 @@ class SimpleCNN(nn.Module):
         )
 
     def forward(self, x):
-        # Returns logits
+        """Returns logits"""
         return self.classifier(self.features(x))

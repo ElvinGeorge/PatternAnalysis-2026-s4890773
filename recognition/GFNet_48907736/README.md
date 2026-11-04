@@ -42,6 +42,9 @@ Alzheimer’s disease (AD) is a neurodegenerative condition characterised by dif
 
 The goal of this algorithm is to assist clinicians by being able to analyse brain scans and identify if someone has AD or is cognitively normal (CN). It will achieve this by being able to analyse a brain MRI and determine whether the scan indicates AD or CN, and a probability of it being AD (P(AD)). The algorithm is a GFNet and works in four stages. The first step is patch embedding. The 224x224 image is split into a 14x14 grid of non-overlapping patches. Each patch is projected onto a 256-dimensional vector to produce a 14x14 grid of tokens. The next step is global filtering. The 12 GFNet blocks normalise the token and apply a 2D fast Fourier transform (FFT) on the 14x14 grid. The result is multiplied by a learnable filter and then transformed back with the inverse FFT. The third step is channel mixing. Within each block, a two-layer MLP is applied to each token to mix information across feature channels. Finally, classification occurs. After the 12 blocks, the tokens are normalised and averaged into a single 256-dimensional vector. This is mapped to two logits, and SoftMax is used to create a probability.
 
+The algorithm is based on Y. Rao, W. Zhao, Z. Zhu, J. Lu, and J. Zhou, “Global filter networks for image classification,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 45, no. 6, pp. 7837–7850, 2023. It copies its structure by using a patch embedding (16×16 patches to produce a 14×14 token grid),  a learned positional embedding, a global filter layer, same block structure and final layer.
+
+
 ![GFNet Pipeline](README_images/gfnet_pipeline.png)
 
 

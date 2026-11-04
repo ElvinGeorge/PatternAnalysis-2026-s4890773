@@ -10,6 +10,7 @@ from torchvision import datasets, transforms
 CLASSES = ["AD", "CN"]
 
 def get_loader(data_root, split, batch_size=64):
+    """Data set loader for the model"""
     # The MRI scans are made grayscale and resized to 224x224
     steps = [transforms.Grayscale(1), transforms.Resize((224, 224))]
     # Training images are augmented to prevent memorisation

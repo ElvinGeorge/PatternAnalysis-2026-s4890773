@@ -36,6 +36,10 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epo
 
 # What happens for each epoch
 def run_epoch(loader, train):
+    """
+    For each epoch, this is what happens.
+    It goes through the images provided, makes a prediction, calculates a loss, then updates the weights
+    """
     model.train(train)
     total_loss, correct, count = 0, 0, 0
     with torch.set_grad_enabled(train):

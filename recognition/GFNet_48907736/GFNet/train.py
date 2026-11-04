@@ -16,6 +16,10 @@ from modules import GFNet
 
 # Loop for each epoch
 def run_epoch(model, loader, loss_fn, device, optimizer=None):
+    """
+    For each epoch, this is what happens.
+    It goes through the images provided, makes a prediction, calculates a loss, then updates the weights
+    """
     train = optimizer is not None
     model.train(train)
     total_loss, correct, count = 0, 0, 0
