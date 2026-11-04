@@ -137,7 +137,7 @@ The GFNet has 7 124 226 parameters compared to only 389 314 on the baseline CNN.
 ### GFNet Error Autopsies 
 #### High Confidence False Positive
 **IMAGE ID**: 1177833_94\
-![High Confidence False Positive](README_images\failure-case-1177833_94.jpeg)\
+![High Confidence False Positive](README_images\GFNet_heatmap_1177833_94.png)\
 **Truth:** CN\
 **Prediction:** AD\
 **P(AD):** 0.998
@@ -147,33 +147,36 @@ NEED TO WRITE HERE
 
 #### Medium Confidence False Positive
 **IMAGE ID**: 921879_91\
-![Medium Confidence False Positive](README_images\failure-case-921879_91.jpeg)\
+![Medium Confidence False Positive](README_images\GFNet_heatmap_921879_91.png)\
 **Truth:** CN\
 **Prediction:** AD\
 **P(AD):** 0.712
 
 NEED TO WRITE HERE 
 
+
 #### Medium Confidence False Negative
 **IMAGE ID**: 1343923_105\
-![Medium Confidence False Negative](README_images\failure-case-1343923_105.jpeg)\
+![Medium Confidence False Negative](README_images\GFNet_heatmap_1343923_105.png)\
 **Truth:** AD\
 **Prediction:** CN\
 **P(AD):** 0.243
 
-NEED TO WRITE HERE 
+NEED TO WRITE HERE
+
 
 #### High Confidence False Negative
 **IMAGE ID**: 373618_88\
-![High Confidence False Negative](README_images\failure-case-373618_88.jpeg)\
+![High Confidence False Negative](README_images\GFNet_heatmap_373618_88.png)\
 **Truth:** AD\
 **Prediction:** CN\
 **P(AD):** 0.003
 
 NEED TO WRITE HERE 
 
+
 ### Recomendations and Trade-Offs
-**Accuracy vs Cost:** Although the GFNet has an accurac y4.1 percentage points higher (from 83.8% to 87.9%), this comes at the cost of ~18x more parameters and ~7x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 5.73ms per slice, it could process 524 patients a minute which is more than enough. Additionally, the increase in specificity from 83.9% to 89.0% is significant since it directly means there are less false postives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 83.8% to 87.9% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
+**Accuracy vs Cost:** Although the GFNet has an accuracy 4.1 percentage points higher (from 83.8% to 87.9%), this comes at the cost of ~18x more parameters and ~7x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 5.73ms per slice, it could process 524 patients a minute which is more than enough. Additionally, the increase in specificity from 83.9% to 89.0% is significant since it directly means there are less false postives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 83.8% to 87.9% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
 
 **Decision Threshold:** The decision threshold is currently set as P(AD) > 0.5. This is a tradeoff since by decreasing it, although there will be less false negatives, there will be more false positives. False negatives, however, are far less impactful then false postives since they just lead to extra testing (as compared to a missed diagnosis). Thus, the decision threshold should be lowered. The high AUROC of 0.945 supports this trade-off, so the threshold should be reduced based on the resources available to handle false positives.
 
@@ -185,3 +188,7 @@ NEED TO WRITE HERE
 Claude Opus 5.5 was used to generate gfnet_pipeline.png\
 I did this by giving it modules.py for my GFNet and asking it to generate a flow diagram that accurately outlines the model architecture.\
 I verified that the output image was correct by checking the diagram against the model structure I have made.
+
+Claude Opus 5.5 was used to generate heatmap.py\
+I did this by giving into my GFNet structure and asking it to generate a script that can take an image and model file, and output a two heatmaps (Grad-CAM and a gradient x input).\
+I have verified this heatmap is correct by going over the code, and then also checking heatmaps to see if there are any obvious issues. I also modified the code to remove it from printing P(AD) and labels on the image since they will be written underneath in the report.
