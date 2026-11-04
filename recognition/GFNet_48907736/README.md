@@ -128,7 +128,7 @@ As stated above, there were 1994 images that were true positives (43.35%), 2048 
 
 
 ### Accuracy Curve
-![Confusion Matrix](../GFNet_48907736/GFNet/outputs/GFNet_accuracy_curve.png)\
+![Accuracy Curve](../GFNet_48907736/GFNet/outputs/GFNet_accuracy_curve.png)\
 By the end of training, the model reached a validation accuracy of 87.2%, and a training accuracy of 98.9%.
 
 ### ROC Curve
