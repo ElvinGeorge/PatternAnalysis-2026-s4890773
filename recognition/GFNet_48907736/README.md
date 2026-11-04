@@ -31,7 +31,7 @@
       - [Medium Confidence False Positive](#medium-confidence-false-positive)
       - [High Confidence False Negative](#high-confidence-false-negative)
       - [Medium Confidence False Negative](#medium-confidence-false-negative)
-    - [Overall Autopsy Takeaway and Recomendations](#overall-autopsy-takeaway-and-recomendations)
+    - [Overall Autopsy Takeaway and Recommendations](#overall-autopsy-takeaway-and-recommendations)
     - [Recommendations and Trade-Offs](#recommendations-and-trade-offs)
   - [AI Disclosure](#ai-disclosure)
 
@@ -56,9 +56,9 @@ The intended users are clinicians who can use this tool for automated screening 
 
 -	Handling: For all high confidence negatives, a negative case should be reported. For medium or high confidence positives, a positive case should be reported, and further testing commence. For any medium confidence negatives, or any low confidence result, there should be a human review process.
 
--	False negatives: Maximising recall is the primary. focus. This is because a false negative leads to undetected AD, whilst a false positive leads to an unneeded test. The model will have be considered successful if it can achieve a recall greater than 80%.
+-	False negatives: Maximising recall is the primary focus. This is because a false negative leads to undetected AD, whilst a false positive leads to an unneeded test. The model will have be considered successful if it can achieve a recall greater than 80%.
 
--	Overall positives: Although maximising recall is the primary focus, false positives lead to unnecessary health scares and biopsies, causing strain on the healthcare system. Thus, it is important the specificity is greater than 80%.
+-	Overall positives: Although maximising recall is the primary focus, false positives lead to unnecessary health scares and follow up tests, causing strain on the healthcare system. Thus, it is important the specificity is greater than 80%.
 
 -	Computational limits: To process a significant number of images and automate this, it is important the inference time is minimised. The model is considered successful if it can achieve a median inference time of 10ms or less, per image, on a standard A100 GPU. 
 
@@ -96,7 +96,7 @@ The input was a AD brain MRI\
 ![True Positive](README_images/example-input-true-pos-1005735_104.jpeg)\
 **Prediction made:** AD\
 **P(AD):** 0.958\
-There were 1994 images that were true postives (43.35%)
+There were 1994 images that were true positives (43.35%)
 
 ### True Negative Case:
 The input was a CN brain MRI\
@@ -115,7 +115,7 @@ The input was a CN brain MRI\
 There were 312 images that were false positives (6.78%)
 
 ### False Negative Case:
-The input was a CN brain MRI\
+The input was a AD brain MRI\
 **IMAGE ID:** 373618_86\
 ![False Negative](README_images/example-input-false-negative-373618_86.jpeg)\
 **Prediction made:** CN\
@@ -124,7 +124,7 @@ There were 246 images that were false negatives (5.35%)
 
 ### Confusion Matrix 
 ![Confusion Matrix](../GFNet_48907736/GFNet/outputs/GFNet_confusion_matrix.png)\
-As stated above, there were 1994 images that were true postives (43.35%), 2048 images that were true negatives (44.52%), 312 images that were false positives (6.78%) and 246 images that were false negatives (5.35%).
+As stated above, there were 1994 images that were true positives (43.35%), 2048 images that were true negatives (44.52%), 312 images that were false positives (6.78%) and 246 images that were false negatives (5.35%).
 
 
 ### Accuracy Curve
@@ -183,7 +183,7 @@ The GFNet has 7 124 226 parameters compared to only 389 314 on the baseline CNN.
 **Prediction:** AD\
 **P(AD):** 0.998
 
-For this slice, the model was extremely confident that the slice had AD, producing a high P(AD) of 0.998. The slice itself is unremarkable since the sulci are narrow and the lateral ventricle is not visibly enlarged. The Grad-CAM map shows that most of the decision came from the black background rather than the brain itself. Gradient x input is spread over the cerebullum and frontal cortex. This information potentially points to the model reading the empty size around the brain for some shortcut indicating an issue in the model.
+For this slice, the model was extremely confident that the slice had AD, producing a high P(AD) of 0.998. The slice itself is unremarkable since the sulci are narrow and the lateral ventricle is not visibly enlarged. The Grad-CAM map shows that most of the decision came from the black background rather than the brain itself. Gradient x input is spread over the cerebellum and frontal cortex. This information potentially points to the model reading the empty space around the brain for some shortcut indicating an issue in the model.
 
 #### Medium Confidence False Positive
 **IMAGE ID**: 921879_91\
@@ -210,15 +210,15 @@ This slice had AD but the model predicted CN with a P(AD) of only 0.003. This me
 **Prediction:** CN\
 **P(AD):** 0.243
 
-This slice had AD, however the model believed it was CN with a P(AD) of 0.243. Grad-CAM and gradient x input shows that the model is looking primarily into the brain. Most of the focus is on the cerebellum, brainstem and ventricle. With this image, there is noticeably less contrast then other slices. It is likely the model did not pick up on the atrophy because of that, and it led it to make a medium confidence CN prediction.
+This slice had AD, however the model believed it was CN with a P(AD) of 0.243. Grad-CAM and gradient x input shows that the model is looking primarily into the brain. Most of the focus is on the cerebellum, brainstem and ventricle. With this image, there is noticeably less contrast than other slices. It is likely the model did not pick up on the atrophy because of that, and it led it to make a medium confidence CN prediction.
 
-### Overall Autopsy Takeaway and Recomendations
-Based of these four examples, it seems that some false positives may be related to background size. This could be because a large background indicates a smaller brain. This is commonly associated with AD, and could indicate to the model that the slice had AD. To fix this, background masking could be used. For false negatives, it is possible that contrast issues or slices where atrophy isn't obvious lead to a CN prediction. To fix this, patient level predictions should be made.
+### Overall Autopsy Takeaway and Recommendations
+Based on these four examples, it seems that some false positives may be related to background size. This could be because a large background indicates a smaller brain. This is commonly associated with AD, and could indicate to the model that the slice had AD. To fix this, background masking could be used. For false negatives, it is possible that contrast issues or slices where atrophy isn't obvious lead to a CN prediction. To fix this, patient level predictions should be made.
 
 ### Recommendations and Trade-Offs
-**Accuracy vs Cost:** Although the GFNet has an accuracy 4.1 percentage points higher (from 83.8% to 87.9%), this comes at the cost of ~18x more parameters and ~7x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 5.73ms per slice, it could process 524 patients a minute which is more than enough. Additionally, the increase in specificity from 83.9% to 89.0% is significant since it directly means there are less false postives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 83.8% to 87.9% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
+**Accuracy vs Cost:** Although the GFNet has an accuracy 4.1 percentage points higher (from 83.8% to 87.9%), this comes at the cost of ~18x more parameters and ~7x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 5.73ms per slice, it could process 524 patients a minute which is more than enough. Additionally, the increase in specificity from 83.9% to 89.0% is significant since it directly means there are less false positives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 83.8% to 87.9% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
 
-**Decision Threshold:** The decision threshold is currently set as P(AD) > 0.5. This is a tradeoff since by decreasing it, although there will be less false negatives, there will be more false positives. False positives, however, are far less impactful then false negatives since they just lead to extra testing (as compared to a missed diagnosis). Thus, the decision threshold should be lowered. The high AUROC of 0.945 supports this trade-off, so the threshold should be reduced based on the resources available to handle false positives.
+**Decision Threshold:** The decision threshold is currently set as P(AD) > 0.5. This is a tradeoff since by decreasing it, although there will be less false negatives, there will be more false positives. False positives, however, are far less impactful than false negatives since they just lead to extra testing (as compared to a missed diagnosis). Thus, the decision threshold should be lowered. The high AUROC of 0.945 supports this trade-off, so the threshold should be reduced based on the resources available to handle false positives.
 
 **Slice Level Prediction:** The model classifies per slice, however diagnosis happen at the per patient level. P(AD) should be averaged across all 20 slices per patient to determine the diagnosis. This would produce more stable and reliable predictions.
 
