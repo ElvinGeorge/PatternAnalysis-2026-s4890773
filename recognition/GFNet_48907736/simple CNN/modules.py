@@ -1,5 +1,5 @@
 """
-Simple CNN. Outputs either 0 = AD, 1 = CN.
+Simple CNN. Outputs either 0 = NC, 1 = AD
 """
 from torch import nn
 

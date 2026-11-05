@@ -1,5 +1,5 @@
 """
-GFNet. Takes a 224x224 slice and outputs either 0 = AD or 1 = CN.
+GFNet. Takes a 224x224 slice and outputs either 0 = NC or AD = 1.
 """
 import torch
 from torch import nn

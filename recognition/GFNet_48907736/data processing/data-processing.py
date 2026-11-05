@@ -15,7 +15,7 @@ import shutil
 from sklearn.model_selection import train_test_split
 
 AD_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Unsplit/AD")
-CN_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Unsplit/CN")
+NC_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Unsplit/CN")
 
 def pt_id_from_path(path) -> str:
     #'1003730_100.jpeg' -> '1003730' (everything before the last underscore)
@@ -37,7 +37,7 @@ def dict_build(path):
 
      
 # Check to see if any one pt is a significant proportion of the dataset
-def print_stats(AD, CN):
+def print_stats(AD, NC):
     print("\n--- ADNI Dataset Statistics ---")
 
     print("AD:")
@@ -46,16 +46,16 @@ def print_stats(AD, CN):
     print("Average images per patient:", sum(map(len, AD.values())) / len(AD))
     print("Largest patient image count:", max(map(len, AD.values())))
 
-    print("\nCN:")
-    print("Total images:", sum(len(v) for v in CN.values()))
-    print("Unique patients:", len(CN))
-    print("Average images per patient:", sum(map(len, CN.values())) / len(CN))
-    print("Largest patient image count:", max(map(len, CN.values())))
+    print("\ NC:")
+    print("Total images:", sum(len(v) for v in NC.values()))
+    print("Unique patients:", len(NC))
+    print("Average images per patient:", sum(map(len, NC.values())) / len(NC))
+    print("Largest patient image count:", max(map(len, NC.values())))
 
-    overlap = set(AD.keys()) & set(CN.keys())
+    overlap = set(AD.keys()) & set(NC.keys())
 
     print("\n--- Patient Overlap ---")
-    print("Patients in both AD and CN:", len(overlap))
+    print("Patients in both AD and NC:", len(overlap))
 
 
 # test train split val
@@ -82,11 +82,11 @@ def split_patients(patient_ids):
     }
     
 # moving the files
-def move_files(AD, CN, AD_split, CN_split):
+def move_files(AD, NC, AD_split, NC_split):
     output_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Processed")
     counter = 0
     # Move images into existing folders
-    for category, files_by_pt, split in [("AD", AD, AD_split), ("CN", CN, CN_split)]:
+    for category, files_by_pt, split in [("AD", AD, AD_split), ("NC", NC, NC_split)]:
         for dataset, patients in split.items():
             
             destination = output_path / dataset / category
@@ -102,11 +102,11 @@ def move_files(AD, CN, AD_split, CN_split):
 
 
 AD_files_by_pt = dict_build(AD_path)
-CN_files_by_pt = dict_build(CN_path)
+NC_files_by_pt = dict_build(NC_path)
 
-print_stats(AD_files_by_pt, CN_files_by_pt)
+print_stats(AD_files_by_pt, NC_files_by_pt)
 
 AD_split = split_patients(list(AD_files_by_pt.keys()))
-CN_split = split_patients(list(CN_files_by_pt.keys()))
+NC_split = split_patients(list(NC_files_by_pt.keys()))
 
-move_files(AD_files_by_pt, CN_files_by_pt, AD_split, CN_split)
+move_files(AD_files_by_pt, NC_files_by_pt, AD_split, NC_split)

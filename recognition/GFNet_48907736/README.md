@@ -40,7 +40,7 @@
 ## The Algorithm
 Alzheimer’s disease (AD) is a neurodegenerative condition characterised by difficulties with memory, fatigue, confusion and physical decline. When clinicians suspect AD, it is important that any brain MRIs produced are correctly interpreted. False positives lead to unnecessary testing and use of hospital resources, while false negatives lead to delayed treatment and care, and potentially a misdiagnosis.
 
-The goal of this algorithm is to assist clinicians by being able to analyse brain scans and identify if someone has AD or is cognitively normal (CN). It will achieve this by being able to analyse a brain MRI and determine whether the scan indicates AD or CN, and a probability of it being AD (P(AD)). The algorithm is a GFNet and works in four stages. The first step is patch embedding. The 224x224 image is split into a 14x14 grid of non-overlapping patches. Each patch is projected onto a 256-dimensional vector to produce a 14x14 grid of tokens. The next step is global filtering. The 12 GFNet blocks normalise the token and apply a 2D fast Fourier transform (FFT) on the 14x14 grid. The result is multiplied by a learnable filter and then transformed back with the inverse FFT. The third step is channel mixing. Within each block, a two-layer MLP is applied to each token to mix information across feature channels. Finally, classification occurs. After the 12 blocks, the tokens are normalised and averaged into a single 256-dimensional vector. This is mapped to two logits, and SoftMax is used to create a probability.
+The goal of this algorithm is to assist clinicians by being able to analyse brain scans and identify if someone has AD or is cognitively normal (NC). It will achieve this by being able to analyse a brain MRI and determine whether the scan indicates AD or NC, and a probability of it being AD (P(AD)). The algorithm is a GFNet and works in four stages. The first step is patch embedding. The 224x224 image is split into a 14x14 grid of non-overlapping patches. Each patch is projected onto a 256-dimensional vector to produce a 14x14 grid of tokens. The next step is global filtering. The 12 GFNet blocks normalise the token and apply a 2D fast Fourier transform (FFT) on the 14x14 grid. The result is multiplied by a learnable filter and then transformed back with the inverse FFT. The third step is channel mixing. Within each block, a two-layer MLP is applied to each token to mix information across feature channels. Finally, classification occurs. After the 12 blocks, the tokens are normalised and averaged into a single 256-dimensional vector. This is mapped to two logits, and SoftMax is used to create a probability.
 
 The algorithm is based on Y. Rao, W. Zhao, Z. Zhu, J. Lu, and J. Zhou, “Global filter networks for image classification,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 45, no. 6, pp. 7837–7850, 2023. It copies its structure by using a patch embedding (16×16 patches to produce a 14×14 token grid),  a learned positional embedding, a global filter layer, same block structure and final layer.
 
@@ -64,7 +64,7 @@ The intended users are clinicians who can use this tool for automated screening 
 
 ### Model Choice & Course Concepts
 The data will be split by patients. This is important to prevent data leakage and inflated accuracy scores. It will then be split into approximately 70% training , 15% testing and 15% validation. These percentages were chosen since ADNI is a large dataset (>10 000 entries) and this is a recommended split, and CV is not feasible due to training times.
-GFNet will be chosen for the model, with a CNN as the baseline. GFNets  have been used before AD classification, most notably by Xu et.al. in 2025. With MRI AD vs CN, they achieved an accuracy of 92.53% and were able to improve this to 98.91% by using a modified GFNet that also incorporated PET scans. This study serves as proof that GFNets, even with just MRI data, can detect AD at a reasonable accuracy rate. 
+GFNet will be chosen for the model, with a CNN as the baseline. GFNets  have been used before AD classification, most notably by Xu et.al. in 2025. With MRI AD vs NC, they achieved an accuracy of 92.53% and were able to improve this to 98.91% by using a modified GFNet that also incorporated PET scans. This study serves as proof that GFNets, even with just MRI data, can detect AD at a reasonable accuracy rate. 
 A typical CNN will be chosen for the baseline. This is since this task is fundamentally computer vision, where a model is looking for signs of AD such as progressive hippocampal and cortical atrophy with ventricular enlargement.
 
 ### Preliminary Feasibility Evidence
@@ -99,15 +99,15 @@ The input was a AD brain MRI\
 There were 1994 images that were true positives (43.35%)
 
 ### True Negative Case:
-The input was a CN brain MRI\
+The input was a NC brain MRI\
 **IMAGE ID:** 998432_107\
 ![True Negative](README_images/example-input-true-neg-998432_107.jpeg)\
-**Prediction made:** CN\
+**Prediction made:** NC\
 **P(AD):** 0.006\
 There were 2048 images that were true negatives (44.52%)
 
 ### False Positive Case:
-The input was a CN brain MRI\
+The input was a NC brain MRI\
 **IMAGE ID:** 1084935_110\
 ![False Positive](README_images/example-input-false-pos-1084935_110.jpeg)\
 **Prediction made:** AD\
@@ -118,7 +118,7 @@ There were 312 images that were false positives (6.78%)
 The input was a AD brain MRI\
 **IMAGE ID:** 373618_86\
 ![False Negative](README_images/example-input-false-negative-373618_86.jpeg)\
-**Prediction made:** CN\
+**Prediction made:** NC\
 **P(AD):** 0.008\
 There were 246 images that were false negatives (5.35%)
 
@@ -138,11 +138,11 @@ By the end of training, the model reached a AUROC of accuracy of 94.5%.
 
 ## Preprocessing and Data Split
 ### Dataset
-The dataset was provided by the course on the /home/groups/comp3710/ADNI. Within the folder, there was a test and train folder, and within each folder two classes, AD and CN. Files are named patientID_sliceNumber.jpeg.\
-There were 14860 images with AD, and 15660 that were CN. In total, there were 30520 images. There was no major class imbalance, with AD making up 48.69% of images. There were 1526 patients, with 20 images per patient.
+The dataset was provided by the course on the /home/groups/comp3710/ADNI. Within the folder, there was a test and train folder, and within each folder two classes, AD and NC. Files are named patientID_sliceNumber.jpeg.\
+There were 14860 images with AD, and 15660 that were NC. In total, there were 30520 images. There was no major class imbalance, with AD making up 48.69% of images. There were 1526 patients, with 20 images per patient.
 
 ### Pre-Processing
-The AD images were pooled and so were the CN images. After that, all the images in either set were grouped by patient and then randomly split between test train and validation sets. This produced six groups of images.\
+The AD images were pooled and so were the NC images. After that, all the images in either set were grouped by patient and then randomly split between test train and validation sets. This produced six groups of images.\
 The images were then converted to grayscale (Grayscale(1)), scaled to 224x224 (Resize((224, 224))) and finally converted to tensors and normalised (ToTensor() + Normalize([0.5], [0.5])). This was done to all images to ensure consistency amongst colour, size and scale.\
 For training, RandomHorizontalFlip() and RandomAffine(degrees=10, translate=(0.05, 0.05), scale=(0.95, 1.05)) was also applied. The reason random horizontal flips and affine transformations were applied was to reduce the chance the model was just memorising the inputs and subsequently improve generalisation. The effect of these transformations were tested when I ran a model without them and only reached 0.802 accuracy and 0.882 AUROC, compared to 0.879 accuracy and 0.945 AUROC with them. This further justified the use of these transformations.
 
@@ -151,7 +151,7 @@ The data was split as 70% training, 15% validation and 15% testing. Splits were 
 
 ## Investigation
 ### Benchmarking Against CNN
-Both models were evaluated on the same test set of 4600 images (AD: 2240, CN: 2360). Both models were also trained on the same set of 21360 images (AD: 10400, CN: 10960).
+Both models were evaluated on the same test set of 4600 images (AD: 2240, NC: 2360). Both models were also trained on the same set of 21360 images (AD: 10400, NC: 10960).
 
 | Metric                     | CNN baseline | GFNet        
 |----------------------------|--------------|-------------
@@ -161,7 +161,7 @@ Both models were evaluated on the same test set of 4600 images (AD: 2240, CN: 23
 | Specificity                | 0.839        | **0.868**    
 | AUROC                      | 0.910        | **0.945**    
 
-The GFNet outperforms the CNN on every metric. It improves accuracy by 4.1 percentage points, from 83.8% to 87.9% and AUROC by 0.035, from 0.910 to 0.945. Recall and specificity both improve from 83.8% to 89.0% and from 83.9% to 86.8%, respectively. Overall, it is evident the GFNet is superior in classifying AD vs CN brain MRIs. This difference in performance is very valuable since the increased specificity and recall mean less missed diagnosis from false negatives, and less wastage of hospital resources from false positives.
+The GFNet outperforms the CNN on every metric. It improves accuracy by 4.1 percentage points, from 83.8% to 87.9% and AUROC by 0.035, from 0.910 to 0.945. Recall and specificity both improve from 83.8% to 89.0% and from 83.9% to 86.8%, respectively. Overall, it is evident the GFNet is superior in classifying AD vs NC brain MRIs. This difference in performance is very valuable since the increased specificity and recall mean less missed diagnosis from false negatives, and less wastage of hospital resources from false positives.
 
 ### Computational Efficiency
 Models were trained and evaluated on a Nvidia A100 40GB GPU.
@@ -179,7 +179,7 @@ The GFNet has 7 124 226 parameters compared to only 389 314 on the baseline CNN.
 #### High Confidence False Positive
 **IMAGE ID**: 1177833_94\
 ![High Confidence False Positive](README_images/GFNet_heatmap_1177833_94.png)\
-**Truth:** CN\
+**Truth:** NC\
 **Prediction:** AD\
 **P(AD):** 0.998
 
@@ -188,7 +188,7 @@ For this slice, the model was extremely confident that the slice had AD, produci
 #### Medium Confidence False Positive
 **IMAGE ID**: 921879_91\
 ![Medium Confidence False Positive](README_images/GFNet_heatmap_921879_91.png)\
-**Truth:** CN\
+**Truth:** NC\
 **Prediction:** AD\
 **P(AD):** 0.712
 
@@ -198,22 +198,22 @@ For this slice, the model was fairly confident that the slice had AD with a P(AD
 **IMAGE ID**: 373618_88\
 ![High Confidence False Negative](README_images/GFNet_heatmap_373618_88.png)\
 **Truth:** AD\
-**Prediction:** CN\
+**Prediction:** NC\
 **P(AD):** 0.003
 
-This slice had AD but the model predicted CN with a P(AD) of only 0.003. This means the model was very confident in its prediction. Unlike the previous false positives, the Grad-CAM and gradient x input shows that the model is looking primarily into the brain. Its focus is on the cerebellum and occipital lobe, with a few hotspots in other places. Observing the image, the ventricle does not seem enlarge, and the sulci do not seem widened. It is likely that for this patient, this slice in particular did not show these features, but others did. To fix this, patient level predictions should be made over slice level
+This slice had AD but the model predicted NC with a P(AD) of only 0.003. This means the model was very confident in its prediction. Unlike the previous false positives, the Grad-CAM and gradient x input shows that the model is looking primarily into the brain. Its focus is on the cerebellum and occipital lobe, with a few hotspots in other places. Observing the image, the ventricle does not seem enlarge, and the sulci do not seem widened. It is likely that for this patient, this slice in particular did not show these features, but others did. To fix this, patient level predictions should be made over slice level
 
 #### Medium Confidence False Negative
 **IMAGE ID**: 1343923_105\
 ![Medium Confidence False Negative](README_images/GFNet_heatmap_1343923_105.png)\
 **Truth:** AD\
-**Prediction:** CN\
+**Prediction:** NC\
 **P(AD):** 0.243
 
-This slice had AD, however the model believed it was CN with a P(AD) of 0.243. Grad-CAM and gradient x input shows that the model is looking primarily into the brain. Most of the focus is on the cerebellum, brainstem and ventricle. With this image, there is noticeably less contrast than other slices. It is likely the model did not pick up on the atrophy because of that, and it led it to make a medium confidence CN prediction.
+This slice had AD, however the model believed it was NC with a P(AD) of 0.243. Grad-CAM and gradient x input shows that the model is looking primarily into the brain. Most of the focus is on the cerebellum, brainstem and ventricle. With this image, there is noticeably less contrast than other slices. It is likely the model did not pick up on the atrophy because of that, and it led it to make a medium confidence NC prediction.
 
 ### Overall Autopsy Takeaway and Recommendations
-Based on these four examples, it seems that some false positives may be related to background size. This could be because a large background indicates a smaller brain. This is commonly associated with AD, and could indicate to the model that the slice had AD. To fix this, background masking could be used. For false negatives, it is possible that contrast issues or slices where atrophy isn't obvious lead to a CN prediction. To fix this, patient level predictions should be made.
+Based on these four examples, it seems that some false positives may be related to background size. This could be because a large background indicates a smaller brain. This is commonly associated with AD, and could indicate to the model that the slice had AD. To fix this, background masking could be used. For false negatives, it is possible that contrast issues or slices where atrophy isn't obvious lead to a NC prediction. To fix this, patient level predictions should be made.
 
 ### Recommendations and Trade-Offs
 **Accuracy vs Cost:** Although the GFNet has an accuracy 4.1 percentage points higher (from 83.8% to 87.9%), this comes at the cost of ~18x more parameters and ~7x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 5.73ms per slice, it could process 524 patients a minute which is more than enough. Additionally, the increase in specificity from 83.9% to 89.0% is significant since it directly means there are less false positives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 83.8% to 87.9% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
@@ -222,7 +222,7 @@ Based on these four examples, it seems that some false positives may be related 
 
 **Slice Level Prediction:** The model classifies per slice, however diagnosis happen at the per patient level. P(AD) should be averaged across all 20 slices per patient to determine the diagnosis. This would produce more stable and reliable predictions.
 
-**Incorporating PET Scans:** The study by [Xu et.al. in 2025](https://dl.acm.org/doi/full/10.1145/3715931.3715943) improved accuracy with CN vs AD from 92.53% with just MRI scans, to 98.91% with a modified GFNet that uses PET scans and MRI scans. By modifying my model to also use PET scan data, the accuracy, recall and specificity can all likely be improved. 
+**Incorporating PET Scans:** The study by [Xu et.al. in 2025](https://dl.acm.org/doi/full/10.1145/3715931.3715943) improved accuracy with NC vs AD from 92.53% with just MRI scans, to 98.91% with a modified GFNet that uses PET scans and MRI scans. By modifying my model to also use PET scan data, the accuracy, recall and specificity can all likely be improved. 
 
 ## AI Disclosure 
 **gfnet_pipeline.png**\

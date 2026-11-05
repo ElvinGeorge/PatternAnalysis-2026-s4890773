@@ -1,13 +1,13 @@
 """
-File structure is: ADNI_Processed/{train,val,test}/{AD,CN}/<patientID>_<slice>.jpeg
+File structure is: ADNI_Processed/{train,val,test}/{AD,NC}/<patientID>_<slice>.jpeg
 
-AD is 0 and CN is 1
+AD is 1 and NC is 0
 """
 
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-CLASSES = ["AD", "CN"]
+CLASSES = {"NC": 0, "AD": 1}
 
 def get_loader(data_root, split, batch_size=64):
     """Data set loader for the model"""

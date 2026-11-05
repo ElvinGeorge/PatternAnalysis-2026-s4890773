@@ -47,7 +47,7 @@ is_AD = [int(y == 0) for y in labels]
 # Confusion Matrix
 cm = confusion_matrix(labels, preds)
 recall = cm[0, 0] / cm[0].sum() # AD correctly found
-specificity = cm[1, 1] / cm[1].sum() # CN correctly found
+specificity = cm[1, 1] / cm[1].sum() # NC correctly found
 
 # Statistics
 print(f"\n=== {args.split} set: {len(labels)} images ===")
