@@ -1,13 +1,14 @@
 ------------------------------------------------------------------
 Changes:
 ------------------------------------------------------------------
-Increased Drop Rate
-Changed Patch Embed to a Convolutional Stem [in_chans, 32, 64, 128, embed_dim]
-Depth = 12 and Drop Rate = 0.3
+Kept Convolutional Stem with structure [in_chans, 32, 64, 128, embed_dim]
+Increased Drop Rate from 0.1 to 0.3
+Kept Random Affine Transfomation and Random Horizontal Flips
 
 ------------------------------------------------------------------
 Stats (Based of validation set):
 ------------------------------------------------------------------
+
  SLICE LEVEL STATS
               precision    recall  f1-score   support
 

@@ -1,12 +1,13 @@
 ------------------------------------------------------------------
 Changes:
 ------------------------------------------------------------------
-Increased Drop Rate
-Baseline Model. Depth = 12 and Drop Rate = 0.3
+Increased Drop Rate from 0.1 to 0.3.
+Kept Random Affine Transfomation and Random Horizontal Flips
 
 ------------------------------------------------------------------
 Stats (Based of validation set):
 ------------------------------------------------------------------
+
  SLICE LEVEL STATS
               precision    recall  f1-score   support
 
@@ -37,6 +38,7 @@ Done
 ------------------------------------------------------------------
 Epochs:
 ------------------------------------------------------------------
+
 Using cuda
 Epoch 1: train loss: 0.685 acc: 0.545 | val loss: 0.681 val acc: 0.546
 New highest val accuracy

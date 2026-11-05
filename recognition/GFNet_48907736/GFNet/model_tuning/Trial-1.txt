@@ -1,11 +1,12 @@
 ------------------------------------------------------------------
 Changes:
 ------------------------------------------------------------------
-Baseline Model. Depth = 12 and Drop Rate = 0.1
+Baseline Model with Patch Embedding and Random Affine Transfomation and Random Horizontal Flip
 
 ------------------------------------------------------------------
 Stats (Based of validation set):
 ------------------------------------------------------------------
+
 SLICE LEVEL STATS
               precision    recall  f1-score   support
 
