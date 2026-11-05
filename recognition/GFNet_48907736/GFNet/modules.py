@@ -17,7 +17,23 @@ class PatchEmbed(nn.Module):
     def forward(self, x):
         return self.proj(x).permute(0, 2, 3, 1)
 
+class ConvStem(nn.Module):
+    """
+    4 convolutions with stride of 2
+    """
+    def __init__(self, in_chans=1, embed_dim=256):
+        super().__init__()
+        chans = [in_chans, 32, 64, 128, embed_dim]
+        layers = []
+        for i in range(4):
+            layers += [nn.Conv2d(chans[i], chans[i + 1], 3, stride=2, padding=1, bias=False), nn.BatchNorm2d(chans[i + 1])]
+            if i < 3:
+                layers.append(nn.ReLU(inplace=True))
+        self.proj = nn.Sequential(*layers)
 
+    def forward(self, x):
+        return self.proj(x).permute(0, 2, 3, 1)
+    
 class GlobalFilter(nn.Module):
     """
     Mixes info between all patches by multiplying learned filter in freq space
@@ -78,9 +94,9 @@ class GFNet(nn.Module):
     Structure follows a patch embedding and postional embedding, a stack of blocks,
     then a global average pooling and linear head
     """
-    def __init__(self, img_size=224, dim=256, depth=12, drop_path_rate=0.1):
+    def __init__(self, img_size=224, dim=256, depth=12, drop_path_rate=0.1,conv_stem=False):
         super().__init__()
-        self.stem = PatchEmbed(dim)
+        self.stem = ConvStem(1, dim) if conv_stem else PatchEmbed(dim)
         g = img_size // 16 # Creates a 14x14 grid of patches
         self.pos_embed = nn.Parameter(torch.zeros(1, g, g, dim))
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
@@ -92,6 +108,7 @@ class GFNet(nn.Module):
         self.norm = nn.LayerNorm(dim)
         self.head = nn.Linear(dim, 2)
 
+    
     def forward(self, x):
         x = self.stem(x) + self.pos_embed
         x = self.blocks(x)

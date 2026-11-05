@@ -31,7 +31,7 @@ print("Using", device)
 train_loader = get_loader(args.data_root, "train")
 val_loader = get_loader(args.data_root, "val")
 
-config = {"dim": 256, "depth": 12, "drop_path_rate": 0.1}
+config = {"dim": 256, "depth": 12, "drop_path_rate": 0.1, "conv_stem": True}
 model = GFNet(**config).to(device)
 
 # Model uses cross entropy loss
