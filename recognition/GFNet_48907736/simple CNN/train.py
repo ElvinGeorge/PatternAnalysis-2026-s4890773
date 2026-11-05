@@ -13,6 +13,9 @@ from torch import nn
 from dataset import get_loader
 from modules import SimpleCNN
 
+# Makes training reproducible
+torch.manual_seed(42)
+
 # Argument parsing
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-root", required=True)

@@ -14,6 +14,9 @@ from torch import nn
 from dataset import get_loader
 from modules import GFNet
 
+# Makes training reproducible
+torch.manual_seed(42)
+
 # Get data and info on running script 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-root", required=True)

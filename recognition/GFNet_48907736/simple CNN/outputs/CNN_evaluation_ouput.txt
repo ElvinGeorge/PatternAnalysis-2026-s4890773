@@ -1,26 +1,28 @@
+Evaluated on the test set
+
 SLICE LEVEL STATS
               precision    recall  f1-score   support
 
-          NC      0.776     0.798     0.787      2180
-          AD      0.813     0.793     0.803      2420
+          NC      0.753     0.783     0.768      2180
+          AD      0.797     0.769     0.783      2420
 
-    accuracy                          0.795      4600
-   macro avg      0.795     0.795     0.795      4600
-weighted avg      0.796     0.795     0.795      4600
+    accuracy                          0.775      4600
+   macro avg      0.775     0.776     0.775      4600
+weighted avg      0.776     0.775     0.776      4600
 
-Accuracy:    0.795
-Macro-F1:    0.795
-Recall:      0.793
-Specificity: 0.798
-AUROC:       0.873
+Accuracy:    0.775
+Macro-F1:    0.775
+Recall:      0.769
+Specificity: 0.783
+AUROC:       0.854
 
  SCAN LEVEL STATS
-Scan Accuracy: 0.870
-Scan Macro-F1: 0.869
-Scan AUROC:    0.923
+Scan Accuracy: 0.839
+Scan Macro-F1: 0.839
+Scan AUROC:    0.903
 
  COMPUTATION STATS
 Parameters:  389,314
 Peak VRAM:   847.6 MB (batch of 64)
-Median Inference Time:     0.83ms per image
+Median Inference Time:     0.84ms per image
 Done
