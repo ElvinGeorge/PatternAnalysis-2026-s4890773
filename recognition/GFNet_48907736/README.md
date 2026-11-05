@@ -235,6 +235,12 @@ Claude Opus 5.5 was used to generate heatmap.py\
 I did this by giving into my GFNet structure and asking it to generate a script that can take an image and model file, and output a two heatmaps (Grad-CAM and a gradient x input).\
 I have verified this heatmap is correct by going over the code, and then also checking heatmaps to see if there are any obvious issues. I also modified the code to remove it from printing P(AD) and labels on the image since they will be written underneath in the report.
 
+**data-analysis.py**
+Claude Opus 5.5 was used to create data-analysis.py\
+I did this by informing it of the file structure I have set up, and what metrics I want checked by the script.\
+I verified this is correct by checking some of the outputs manually, such as file count, patient count and scan count.\
+I have also gone through the code to look for errors or bugs
+
 **Table of Contents**\
 Claude Opus 5.5 was used to generate the table of contents at the start of the README.md file\
 This was done by giving it a list of the section headings, and instructions on how to make it.\
