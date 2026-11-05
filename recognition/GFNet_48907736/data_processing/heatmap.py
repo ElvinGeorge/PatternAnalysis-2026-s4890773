@@ -12,6 +12,8 @@ import torch.nn.functional as F
 from PIL import Image
 from torchvision import transforms
 
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from GFNet.modules import load_model
 
 parser = argparse.ArgumentParser()
@@ -20,9 +22,11 @@ parser.add_argument("--weights", default="gfnet.pt")
 parser.add_argument("--out", default="GFNet_heatmap.png")
 args = parser.parse_args()
 
+
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = load_model(args.weights, device)
-transform = transforms.Compose([transforms.Grayscale(1), transforms.Resize((224, 224)),
+transform = transforms.Compose([transforms.Grayscale(1), transforms.CenterCrop(200), transforms.Resize((224, 224)),
                                 transforms.ToTensor(), transforms.Normalize([0.5], [0.5])])
 image = transform(Image.open(args.image))[None].to(device).requires_grad_(True)  # (1, 1, 224, 224)
 
