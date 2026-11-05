@@ -11,7 +11,7 @@ Kept Random Horizontal Flips
 Stats (Based of validation set):
 ------------------------------------------------------------------
 
- SLICE LEVEL STATS
+SLICE LEVEL STATS
               precision    recall  f1-score   support
 
           NC      0.854     0.870     0.862      2100

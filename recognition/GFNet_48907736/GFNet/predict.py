@@ -25,6 +25,7 @@ model = load_model(args.weights, device)
 # Same preprocessing as the val/test loader in dataset.py
 transform = transforms.Compose([
     transforms.Grayscale(1),
+    transforms.CenterCrop(200),
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize([0.5], [0.5]),
