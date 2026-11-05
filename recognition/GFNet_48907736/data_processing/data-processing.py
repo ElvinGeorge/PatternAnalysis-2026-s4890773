@@ -1,5 +1,14 @@
 """
-Split ADNI_Unsplit into test train val by patient
+Split ADNI_Unsplit into test train val by patient. 
+Before using the script, need to have an empty directory:
+
+ADNI_Processed_2/test/0_NC
+ADNI_Processed_2/test/1_AD
+ADNI_Processed_2/train/0_NC
+ADNI_Processed_2/train/1_AD
+ADNI_Processed_2/val/0_NC
+ADNI_Processed_2/val/1_AD
+
 """
 import os
 import json
