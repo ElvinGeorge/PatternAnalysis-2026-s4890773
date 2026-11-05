@@ -1,112 +1,97 @@
 """
-Goal is have a processed dataset with 70% allocated to training, 15% to validation and 15% to testing.
-
-First, the data is manually put moved out from the pre-allocated test and train folders.
-
-Next, the data will be split on patient ID. For each image, the name is patientID_sliceNumber meaning
-this process will sort by the first half of the image name.
-
-After this is done, the test/train/val split will be made randomly while ensuring patients are kept together.
+Split ADNI_Unsplit into test train val by patient
 """
-
-
-from pathlib import Path
+import os
+import json
+import random
 import shutil
 from sklearn.model_selection import train_test_split
 
-AD_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Unsplit/AD")
-NC_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Unsplit/CN")
+# Classes
+CLASSES = ["0_NC", "1_AD"]
 
-def pt_id_from_path(path) -> str:
-    #'1003730_100.jpeg' -> '1003730' (everything before the last underscore)
-    return int(path.stem.rsplit("_", 1)[0])
+# File paths 
+BASE = r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project"
+SOURCE_DIR = os.path.join(BASE, "ADNI_Unsplit")
+OUTPUT_DIR = os.path.join(BASE, "ADNI_Processed_2")
+METADATA_FILE = os.path.join(BASE, "meta_data_with_label.json")
 
-def pic_id_from_path(path) -> str:
-    #'1003730_100.jpeg' -> '100' (everything after the last underscore)
-    return int(path.stem.rsplit("_", 1)[1])
-
-# Build dictionarys by patient
-def dict_build(path): 
-    dict = {}
-    for file_path in path.iterdir():
-        if file_path.is_file():
-            pt_id = pt_id_from_path(file_path)
-            pic_id = pic_id_from_path(file_path)
-            dict.setdefault(pt_id, []).append(file_path)
-    return dict
-
-     
-# Check to see if any one pt is a significant proportion of the dataset
-def print_stats(AD, NC):
-    print("\n--- ADNI Dataset Statistics ---")
-
-    print("AD:")
-    print("Total images:", sum(len(v) for v in AD.values()))
-    print("Unique patients:", len(AD))
-    print("Average images per patient:", sum(map(len, AD.values())) / len(AD))
-    print("Largest patient image count:", max(map(len, AD.values())))
-
-    print("\ NC:")
-    print("Total images:", sum(len(v) for v in NC.values()))
-    print("Unique patients:", len(NC))
-    print("Average images per patient:", sum(map(len, NC.values())) / len(NC))
-    print("Largest patient image count:", max(map(len, NC.values())))
-
-    overlap = set(AD.keys()) & set(NC.keys())
-
-    print("\n--- Patient Overlap ---")
-    print("Patients in both AD and NC:", len(overlap))
+# Small helper functions
+def get_scan_and_slice(filename):
+    """'1003730_100.jpeg' -> (1003730, 100)"""
+    name, _ = os.path.splitext(filename)
+    parts = name.split("_")
+    scan_id = parts[0]
+    slice_number = int(parts[1])
+    return scan_id, slice_number
 
 
-# test train split val
-def split_patients(patient_ids):
+def get_patient_id(raw_path):
+    pieces = raw_path.replace("\\", "/").replace("/", "_").split("_")
+    for i in range(len(pieces) - 2):
+        a, b, c = pieces[i], pieces[i + 1], pieces[i + 2]
+        if len(a) == 3 and a.isdigit() and b == "S" and len(c) == 4 and c.isdigit():
+            return a + "_S_" + c
 
-    # 70% training 30% remaining
-    train, remaining = train_test_split(
-        patient_ids,
-        test_size=0.30,
-        random_state=42
-    )
-
-    # Split remaining equally into validation and testing
-    val, test = train_test_split(
-        remaining,
-        test_size=0.50,
-        random_state=42
-    )
-
-    return {
-        "train": train,
-        "val": val,
-        "test": test
-    }
-    
-# moving the files
-def move_files(AD, NC, AD_split, NC_split):
-    output_path = Path(r"C:\Users\elvin\OneDrive\Desktop\UQ\Year 3, Semester 2\COMP3710\Final Project\ADNI_Processed")
-    counter = 0
-    # Move images into existing folders
-    for category, files_by_pt, split in [("AD", AD, AD_split), ("NC", NC, NC_split)]:
-        for dataset, patients in split.items():
-            
-            destination = output_path / dataset / category
-            for patient in patients:
-                for file_path in files_by_pt[patient]:
-                    shutil.copy2(str(file_path), str(destination / file_path.name))
-                    counter += 1
-                    
-                    if counter % 1000 == 0:
-                        print(f"{counter} files copied")
-                    
-    print(f"{counter} files copied successfully.")
+# Read metadata
+with open(METADATA_FILE) as f:
+    metadata = json.load(f)
 
 
-AD_files_by_pt = dict_build(AD_path)
-NC_files_by_pt = dict_build(NC_path)
+# Compile the slices into scans
+scans = {}
 
-print_stats(AD_files_by_pt, NC_files_by_pt)
+for class_name in CLASSES:
+    class_folder = os.path.join(SOURCE_DIR, class_name)
+    for filename in os.listdir(class_folder):
+        scan_id, slice_number = get_scan_and_slice(filename)
 
-AD_split = split_patients(list(AD_files_by_pt.keys()))
-NC_split = split_patients(list(NC_files_by_pt.keys()))
+        if scan_id not in scans:
+            scans[scan_id] = {"class": class_name, "files": [], "first_slice": slice_number}
 
-move_files(AD_files_by_pt, NC_files_by_pt, AD_split, NC_split)
+        scans[scan_id]["files"].append(os.path.join(class_folder, filename))
+        if slice_number < scans[scan_id]["first_slice"]:
+            scans[scan_id]["first_slice"] = slice_number
+
+print("Found", len(scans), "scans")
+
+# Group the scans by patients
+patients = {}
+
+for scan_id in scans:
+    patient_id = get_patient_id(metadata[scan_id]["raw"])
+    scans[scan_id]["patient"] = patient_id
+
+    if patient_id not in patients:
+        patients[patient_id] = []
+    patients[patient_id].append(scan_id)
+
+print("Found", len(patients), "patients")
+
+# Split patients into test train val
+patient_ids = sorted(patients)
+labels = [scans[patients[p][0]]["class"] for p in patient_ids]
+
+train_ids, temp_ids, _, temp_labels = train_test_split(patient_ids, labels, test_size=0.30, stratify=labels, random_state=42)
+val_ids, test_ids = train_test_split(temp_ids, test_size=0.50, stratify=temp_labels, random_state=42)
+
+patient_split = {}
+for p in train_ids: patient_split[p] = "train"
+for p in val_ids:   patient_split[p] = "val"
+for p in test_ids:  patient_split[p] = "test"
+
+# Copy the files
+copied = 0
+for scan_id in scans:
+    scan = scans[scan_id]
+    split = patient_split[scan["patient"]]
+    if scan["class"] == "0_NC":
+        destination = os.path.join(OUTPUT_DIR, split, "0_NC")
+    else:
+        destination = os.path.join(OUTPUT_DIR, split, "1_AD")
+    for file_path in scan["files"]:
+        shutil.copy2(file_path, destination)
+        copied += 1
+        if copied % 2000 == 0:
+            print("Copied", copied, "files")
+print("Copied", copied, "files in total")

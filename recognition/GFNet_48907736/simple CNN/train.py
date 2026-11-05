@@ -17,7 +17,6 @@ from modules import SimpleCNN
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-root", required=True)
 parser.add_argument("--epochs", type=int, default=20)
-parser.add_argument("--save-path", default="cnn.pt")
 args = parser.parse_args()
 
 # Use a GPU if possible
@@ -74,7 +73,7 @@ for epoch in range(1, args.epochs + 1):
     # Keep the model that performs the best on the val set
     if val_acc > best_val_acc:
         best_val_acc = val_acc
-        torch.save(model.state_dict(), args.save_path)
+        torch.save(model.state_dict(), "cnn.pt")
         print("New highest val accuracy")
 
 print(f"Best val accuracy: {best_val_acc:.3f}")
