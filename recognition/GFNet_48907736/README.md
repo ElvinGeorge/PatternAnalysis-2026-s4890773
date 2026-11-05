@@ -35,7 +35,7 @@
     - [Overall Autopsy Takeaway and Recommendations](#overall-autopsy-takeaway-and-recommendations)
     - [Recommendations and Trade-Offs](#recommendations-and-trade-offs)
     - [Answering The Open Research Question](#answering-the-open-research-question)
-  - [AI Disclosure](#ai-disclosure)
+  - [Artificial Intelligence Usage Disclosure](#artificial-intelligence-usage-disclosure)
 
 ## The Algorithm
 Alzheimer’s disease (AD) is a neurodegenerative condition characterised by difficulties with memory, fatigue, confusion and physical decline. When clinicians suspect AD, it is important that any brain MRIs produced are correctly interpreted. False positives lead to unnecessary testing and use of hospital resources, while false negatives lead to delayed treatment and care, and potentially a misdiagnosis.
@@ -46,7 +46,7 @@ The algorithm is based on Y. Rao, W. Zhao, Z. Zhu, J. Lu, and J. Zhou, “Global
 
 ![GFNet Pipeline](README_images/gfnet_pipeline.png)
 
-The model works in four primary stages. First, it takes an input image, crops it to 200x200, resizes it to 224x224 and passes it through a convolutional stem. This consists of four 3x3 convolutions that produce an output of 224 channels which each are 14x14. The next step is global filtering. Each of the 12 GFNet blocks applies a LayerNorm, applies a fast fourier transform, multiplies by a learned complex weight and applies an inverse fast fourier transform. The next step is channel mixing. Inside the same block, another LayerNrom and two layer MLP mix information across channels for each token. The whole block is wrapped in a residual connection as well. Finally, classification happens. This is done after all 12 blocks and their output is normalised into one 256-dimensional vector. A linear layer maps it to either AD or NC and softmax is used to give P(AD) and P(NC).
+The model works in four primary stages. First, it takes an input image, crops it to 200x200, resizes it to 224x224 and passes it through a convolutional stem. This consists of four 3x3 convolutions that produce an output of 256 channels which each are 14x14. The next step is global filtering. Each of the 12 GFNet blocks applies a LayerNorm, applies a fast fourier transform, multiplies by a learned complex weight and applies an inverse fast fourier transform. The next step is channel mixing. Inside the same block, another LayerNorm and two layer MLP mix information across channels for each token. The whole block is wrapped in a residual connection as well. Finally, classification happens. This is done after all 12 blocks and their output is normalised into one 256-dimensional vector. A linear layer maps it to either AD or NC and softmax is used to give P(AD) and P(NC).
 
 ## Reasoning Behind the Model
 For the following section, trials refer to the trials in recognition\GFNet_48907736\GFNet\model_tuning
@@ -61,7 +61,7 @@ The model passes a slice through four 3x3 convolutions with stride 2 (number of 
 Trials 1 and 2 compared the effect of random Affine Transformations. Trial 1, which used it, produced a validation accuracy of 0.783. Trial 2, which only differed in not using it, produced a validation accuracy of 0.724. This was evidence that by training the model with random affine transformations applied, there was a better generalisation. The strength of the affine transformation was also tested. Between trial 7  and 8, one of the changes was increasing the transformation from 10 degrees to 15 degrees, as well as adding cropping. These changes improved validation accuracy from 0.813 to 0.863.
 
 **Random Horizontal Flips:**
-Random horizontal flips were tested in trials 1 and 3. Trial 1, which used it, produced a validation accuracy of 0.783. Trial 3, which only differed in not using it, produced a validation accuracy of 0.791. Although this intially indicated that random horizontal flips reduced test accuracy, further testing on a later model showed the opposite. Trial 8 and 9 had the same model, except 9 did not use horizontal flips. Trial 8 had the higher validation test accuracy of 0.863, while 9 had 0.853. It is likely that this transformation had minimal impact overall, but was still kept since it improved validation accuracy on the latest model.
+Random horizontal flips were tested in trials 1 and 3. Trial 1, which used it, produced a validation accuracy of 0.783. Trial 3, which only differed in not using it, produced a validation accuracy of 0.791. Although this initially indicated that random horizontal flips reduced test accuracy, further testing on a later model showed the opposite. Trial 8 and 9 had the same model, except 9 did not use horizontal flips. Trial 8 had the higher validation test accuracy of 0.863, while 9 had 0.853. It is likely that this transformation had minimal impact overall, but was still kept since it improved validation accuracy on the latest model.
 
 **Drop Rate:**
 Drop rate was tested at either 0.1 or 0.3. Trial 1 and 4 showed the difference between them on the base models. Trial 1, which used a drop rate of 0.1, had a validation accuracy of 0.783, while trial 4, which had a drop rate of 0.3, had a validation accuracy of 0.793. Drop rate was also tested when there was a convolutional stem in trials 5 and 6, which had drop rates of 0.1 and 0.3, respectively. Both trials produced almost the same validation accuracy, with trial 6 at 0.843 compared to 0.844 from trial 5. Although trials 5 and 6 showed no meaningful difference, trials 1 and 4 showed that increasing drop rate to 0.3 can help, so that was chosen.
@@ -73,7 +73,7 @@ In a clinical setting, a diagnosis is not made over a single slice. It is almost
 During training, it was observed that the last model would be outperformed on models from previous epochs. This is due to overfitting onto the training set and volatility. This is seen in the simple CNN's accuracy curve. In the plot, the validation accuracy experiences large fluctuations. By taking the best model on validation accuracy, it reduces volatility and dependence on the last epoch being good. As a result, for the GFNet, the model taken is the one that produced the highest validation accuracy as well.
 
 **Final Model:**
-The final model uses a Convolutional Stem of [in_chans, 32, 64, 128, embed_dim], Affine Transfomation upto 15 degrees, random horizontal flips, cropping to 200x200 pixels, before rescaling and a drop rate at 0.3.
+The final model uses a Convolutional Stem of [in_chans, 32, 64, 128, embed_dim], Affine Transformation upto 15 degrees, random horizontal flips, cropping to 200x200 pixels, before rescaling and a drop rate at 0.3.
 
 **Overall Testing Summary**
 | Trial | Change                                         | Accuracy  | AUROC     | Specificity | Recall (AD) |
@@ -128,9 +128,11 @@ I have 80 computing credits with Google Collab, and also free access to UQ’s R
 | pandas       | 2.2.3   |
 
 ### Reproducibility
-The hardware used to run the models was a NVIDIA A100-SXM4-40GB. The hardware is important when it comes to reproducing model training and inference times.\
-The test train val split is reproducible since it was done with randomstate=42. Training was also seeded, meaning that the models tested and evaluated can be exactly reproduced.\
-As a whole, if the scripts were run again on any GPU, the results achieved are highly reproducible (aside for inference time unless it were run on a similar GPU).
+The hardware used to run the models was a NVIDIA A100-SXM4-40GB. The hardware is important when it comes to reproducing model training and inference times.
+
+The test train val split is reproducible since it was done with randomstate=42. Training was also seeded, meaning that the models tested and evaluated can be reproduced.
+
+As a whole, if the scripts were run again on any capable GPU, the results achieved are highly reproducible. The only exception is inference time since it is dependent on the GPU's strength and could only be reproduced if the model was run on a similar one.
 
 ## Example Inputs and Outputs and Plots
 ### True Positive Case:
@@ -195,7 +197,7 @@ In total, there are 680 patients who have produced 1526 scans. Each scan has 20 
 ### Pre-Processing
 The AD images were pooled and so were the NC images. After that, all the images in either set were grouped by patient and then randomly split between test train and validation sets. The split was stratified to ensure similar proportions of AD and NC patients across all six groups of images.
 
-Images were then converted to grayscale with Grayscale(1), cropped to 200x200 with CenterCrop(200), scaled to 224x224 with Resize((224, 224)) and finally converted to tensors and normalised with ToTensor() + Normalize([0.5], [0.5]). This was done to all images to ensure consistency amongst colour, size and scale. Futher justification on cropping is in [Reasoning Behind the Model](#reasoning-behind-the-model).
+Images were then converted to grayscale with Grayscale(1), cropped to 200x200 with CenterCrop(200), scaled to 224x224 with Resize((224, 224)) and finally converted to tensors and normalised with ToTensor() + Normalize([0.5], [0.5]). This was done to all images to ensure consistency amongst colour, size and scale. Further justification on cropping is in [Reasoning Behind the Model](#reasoning-behind-the-model).
 
 For training, RandomHorizontalFlip() and transforms.RandomAffine(degrees=15, translate=(0.08, 0.08), scale=(0.9, 1.1)) was also applied. The reasoning behind this was explained earlier in [Reasoning Behind the Model](#reasoning-behind-the-model).
 
@@ -219,7 +221,7 @@ Both models were evaluated on the same test set of 4600 images. Both models were
 | Scan macro-F1          | 0.839        | **0.865** |
 | Scan AUROC             | 0.903        | **0.932** | 
 
-The GFNet outperforms the CNN on every metric. It improves slice accuracy by 2.25 percentage points, from 77.5% to 80.00% and slice AUROC by 0.027 from 0.854 to 0.881. Recall improves from 76.9% to 77.6% and specificity improves from 78.3% to 82.7%. At a scan level, these improvements are seen again. Scan accuracy is improved by 2.60 percentage points from 83.9% to 86.5%, and scan AUROC improves by 0.029 from 0.903 to 0.932.
+The GFNet outperforms the CNN on every metric. It improves slice accuracy by 2.5 percentage points, from 77.5% to 80.00% and slice AUROC by 0.027 from 0.854 to 0.881. Recall improves from 76.9% to 77.6% and specificity improves from 78.3% to 82.7%. At a scan level, these improvements are seen again. Scan accuracy is improved by 2.60 percentage points from 83.9% to 86.5%, and scan AUROC improves by 0.029 from 0.903 to 0.932.
 
 Overall, it is evident the GFNet is superior in classifying AD vs NC brain MRIs. This difference in performance is very valuable since the increased specificity and recall mean less missed diagnosis from false negatives, and less wastage of hospital resources from false positives.
 
@@ -243,7 +245,7 @@ The GFNet has 7,446,754 parameters compared to only 389,314 on the baseline CNN.
 **Prediction:** AD\
 **P(AD):** 0.985
 
-The cortex looks thin on the right although this half of the slice is much darker, which is unusual. The gradient x input is on the cerebellum and brainstem. Grad-CAM has a large spot on the bottom left on the image onto the blackground. This is also unusual and indicates the model has found a shortcut by using the background instead of the brain.
+The cortex looks thin on the right although this half of the slice is much darker, which is unusual. The gradient x input is on the cerebellum and brainstem. Grad-CAM has a large spot on the bottom left on the image onto the background. This is also unusual and indicates the model has found a shortcut by using the background instead of the brain.
 
 #### Medium Confidence False Positive
 **IMAGE ID**: 1291468_98\
@@ -252,7 +254,7 @@ The cortex looks thin on the right although this half of the slice is much darke
 **Prediction:** AD\
 **P(AD):** 0.702
 
-Similar to the previous false positive, the Grad-CAM shows that the model is looking into the black background. Gradient x input is spread over the cerebulleum, brainstem and lower cortex. There is no focus on the ventricle or sulci. This once again points to the model using a shortcut instead of analysing the brain scan.
+Similar to the previous false positive, the Grad-CAM shows that the model is looking into the black background. Gradient x input is spread over the cerebelleum, brainstem and lower cortex. There is no focus on the ventricle or sulci. This once again points to the model using a shortcut instead of analysing the brain scan.
 
 #### High Confidence False Negative
 **IMAGE ID**: 1061844_108\
@@ -261,7 +263,7 @@ Similar to the previous false positive, the Grad-CAM shows that the model is loo
 **Prediction:** NC\
 **P(AD):** 0.006
 
-Unlike the previous false postives, Grad-CAM now shows that the model is looking into the brain. The Grad-CAM shows the model looking into the cerebellum, but also some regions of the background. Gradient x input also shows the model is very focused on the brainstem.
+Unlike the previous false positives, Grad-CAM now shows that the model is looking into the brain. The Grad-CAM shows the model looking into the cerebellum, but also some regions of the background. Gradient x input also shows the model is very focused on the brainstem.
 
 #### Medium Confidence False Negative
 **IMAGE ID**: 344365_94\
@@ -281,7 +283,7 @@ Scan averaging fixes slice errors. Although the High Confidence False Positive a
 
 ### Recommendations and Trade-Offs
 **Background Masking:**
-As discussed in the autopsy takeaway and reccomendation, it is likely that the background allows inference of slice position. This allows the model to form a shortcut depending on how confident it is of the slice position. Later slices are more likely to be NC, whilst earlier slices, AD. As a result, by adding background masking and then scaling the image, the model will no longer be able to look at the background. Instead, its prediction must come from the brain tissue.
+As discussed in the autopsy takeaway and recommendation, it is likely that the background allows inference of slice position. This allows the model to form a shortcut depending on how confident it is of the slice position. Later slices are more likely to be NC, whilst earlier slices, AD. As a result, by adding background masking and then scaling the image, the model will no longer be able to look at the background. Instead, its prediction must come from the brain tissue.
 
 **Accuracy vs Cost:**
 Although the GFNet has an accuracy 2.25 percentage points higher (from 77.5% to 80.00%), this comes at the cost of ~19x more parameters and ~1.8x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 1.57ms per slice, it could process 1911 scans a minute which is more than enough. Additionally, the increase in specificity from 78.3% to 82.7% is significant since it directly means there are less false positives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 76.9% to 77.6% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
@@ -296,7 +298,7 @@ The model classifies per slice and per scan, however diagnosis happen at the per
 The study by [Xu et.al. in 2025](https://dl.acm.org/doi/full/10.1145/3715931.3715943) improved accuracy with NC vs AD from 92.53% with just MRI scans, to 98.91% with a modified GFNet that uses PET scans and MRI scans. By modifying my model to also use PET scan data, the accuracy, recall and specificity can all likely be improved. 
 
 ### Answering The Open Research Question 
-The model quantifies uncertainity with a P(AD) and P(NC) score that is calculated using softmax. Looking at the GFNet's predictions for slices, the accuracy of that score can be seen:
+The model quantifies uncertainty with a P(AD) and P(NC) score that is calculated using softmax. Looking at the GFNet's predictions for slices, the accuracy of that score can be seen:
 
 | Predicted | Confidence | Correct | Wrong | Total | Accuracy |
 |---|---|---|---|---|---|
@@ -318,15 +320,15 @@ The model quantifies uncertainity with a P(AD) and P(NC) score that is calculate
 
 This table categorises every prediction made in the test set as either high confidence (P > 0.900), medium confidence (0.700 <= P <= 0.900), or low confidence (0.500 < P < 0.700) (Note that no predictions had a P of exactly 0.500). For AD, P(AD) is used. For NC, P(NC) is used.
 
-The table shows that when the model predicts AD, it is correct 94.3% of the time when it has high confidence, but only 60.6% of the time with low confidence. When it predicts CN, it is correct 86.9% of the time when it has high confidence, but only 53.3% of the time when it has low confidence. 
+The table shows that when the model predicts AD, it is correct 94.3% of the time when it has high confidence, but only 60.6% of the time with low confidence. When it predicts NC, it is correct 86.9% of the time when it has high confidence, but only 53.3% of the time when it has low confidence. 
 
-It is evident that low confidence NC, low confidence AD and medium confidence NC predictions should be should be directed for human review. The is because by routing low confidence and medium confidence NC predictions to clinicans, only high confidence NC predictions will be made by the model. This will significantly reduce the number of misses. Low confidence AD should also be routed since the accuracy is only 60.6%. Therefore, by getting a clinican to assess them, the number of false positives can be significantly reduced. Doing this would mean 1425 of the 4600 slices would be routed (30.98%), which still means the model can classify more than two thirds of scans.
+It is evident that low confidence NC, low confidence AD and medium confidence NC predictions should be should be directed for human review. The is because by routing low confidence and medium confidence NC predictions to clinicians, only high confidence NC predictions will be made by the model. This will significantly reduce the number of misses. Low confidence AD should also be routed since the accuracy is only 60.6%. Therefore, by getting a clinican to assess them, the number of false positives can be significantly reduced. Doing this would mean 1425 of the 4600 slices would be routed (30.98%), which still means the model can classify more than two thirds of slices.
 
-Furthermore, as seen in [Reasoning Behind the Model](#reasoning-behind-the-model) and [Benchmarking Against CNN](#benchmarking-against-cnn), the model performs better on scan level predictons compared to slice level. At a slice level, it has an accuracy of 80.00%, but at a scan level, it is 86.50%. Since there are less false postives and negatives, there would be even less scans that must be directed to clinicians since the accuracy at each confidence level will be greater.
+Furthermore, as seen in [Reasoning Behind the Model](#reasoning-behind-the-model) and [Benchmarking Against CNN](#benchmarking-against-cnn), the model performs better on scan level predictions compared to slice level. At a slice level, it has an accuracy of 80.00%, but at a scan level, it is 86.50%. Since there are less false positives and negatives, there would be even less scans that must be directed to clinicians since the accuracy at each confidence level will be greater.
 
 Using this advanced model over the baseline CNN is worth the extra computation as the computational difference is minor, as justified in [Computational Efficiency](#computational-efficiency), but the benefits are substantial, as justified in [Benchmarking Against CNN](#benchmarking-against-cnn)
 
-## AI Disclosure 
+## Artificial Intelligence Usage Disclosure 
 **gfnet_pipeline.png**\
 Claude Opus 5.5 was used to generate gfnet_pipeline.png\
 I did this by giving it modules.py for my GFNet and asking it to generate a flow diagram that accurately outlines the model architecture.\

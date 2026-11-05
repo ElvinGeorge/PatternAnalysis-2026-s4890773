@@ -19,7 +19,7 @@ torch.manual_seed(42)
 # Argument parsing
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-root", required=True)
-parser.add_argument("--epochs", type=int, default=20)
+parser.add_argument("--epochs", type=int, default=100)
 args = parser.parse_args()
 
 # Use a GPU if possible

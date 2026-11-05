@@ -20,7 +20,7 @@ torch.manual_seed(42)
 # Get data and info on running script 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-root", required=True)
-parser.add_argument("--epochs", type=int, default=50)
+parser.add_argument("--epochs", type=int, default=100)
 args = parser.parse_args()
 
 # Use a GPU if possible
