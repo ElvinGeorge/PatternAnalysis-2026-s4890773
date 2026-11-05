@@ -40,14 +40,14 @@ with torch.no_grad():
         probs = torch.softmax(model(images.to(device)), dim=1).cpu()
         labels += y.tolist()
         preds += probs.argmax(1).tolist()
-        prob_ad += probs[:, 0].tolist()
+        prob_ad += probs[:, 1].tolist()
 
-is_AD = [int(y == 0) for y in labels]
+is_AD = [int(y == 1) for y in labels]
 
 # Confusion Matrix
 cm = confusion_matrix(labels, preds)
-recall = cm[0, 0] / cm[0].sum() # AD correctly found
-specificity = cm[1, 1] / cm[1].sum() # NC correctly found
+recall = cm[1, 1] / cm[1].sum() # AD correctly found
+specificity = cm[0, 0] / cm[0].sum() # NC correctly found
 
 # Statistics
 print(f"\n=== {args.split} set: {len(labels)} images ===")
@@ -83,11 +83,13 @@ print(f"Median Inference Time:     {times[len(times) // 2]:.2f}ms per image")
 ConfusionMatrixDisplay(cm, display_labels=CLASSES).plot(cmap="Blues")
 plt.title(f"Confusion matrix ({args.split})")
 plt.savefig("CNN_confusion_matrix.png")
+plt.close()
 
 # ROC Curve
 RocCurveDisplay.from_predictions(is_AD, prob_ad, name="SimpleCNN")
 plt.title(f"ROC curve, AD as positive ({args.split})")
 plt.savefig("CNN_roc_curve.png")
+plt.close()
 
 # Write all predictions for all images into a CSV
 with open("CNN_test_predictions.csv", "w") as file:

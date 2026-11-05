@@ -36,4 +36,4 @@ with torch.no_grad():
         image = transform(Image.open(path)).unsqueeze(0).to(device)
         probs = torch.softmax(model(image), dim=1)[0]
         pred = probs.argmax().item()
-        print(f"{path}: {CLASSES[pred]} (P(AD) = {probs[0]:.3f})")
+        print(f"{path}: {CLASSES[pred]} (P(AD) = {probs[1]:.3f})")

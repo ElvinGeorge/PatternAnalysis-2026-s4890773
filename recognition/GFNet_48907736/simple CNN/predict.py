@@ -15,7 +15,7 @@ from modules import SimpleCNN
 # Argument parsing
 parser = argparse.ArgumentParser()
 parser.add_argument("images", nargs="+")
-parser.add_argument("--weights", default="best_cnn.pt")
+parser.add_argument("--weights", default="cnn.pt")
 args = parser.parse_args()
 
 # Use a GPU if possible
@@ -38,4 +38,4 @@ with torch.no_grad():
         image = transform(Image.open(path)).unsqueeze(0).to(device)
         probs = torch.softmax(model(image), dim=1)[0]
         pred = probs.argmax().item()
-        print(f"{path}: {CLASSES[pred]} (P(AD) = {probs[0]:.3f})")
+        print(f"{path}: {CLASSES[pred]} (P(AD) = {probs[1]:.3f})")

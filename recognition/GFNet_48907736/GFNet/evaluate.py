@@ -39,21 +39,21 @@ with torch.no_grad():
         probs = torch.softmax(model(images.to(device)), dim=1).cpu()
         labels += y.tolist()
         preds += probs.argmax(1).tolist()
-        prob_ad += probs[:, 0].tolist()
+        prob_ad += probs[:, 1].tolist()
 
-is_AD = [int(y == 0) for y in labels] 
+is_AD = [int(y == 1) for y in labels] 
 
 # Confusion matrix
 cm = confusion_matrix(labels, preds)
-sensitivity = cm[0, 0] / cm[0].sum()  # AD correctly found
-specificity = cm[1, 1] / cm[1].sum()  # NC correctly found
+recall = cm[1, 1] / cm[1].sum()  # AD correctly found
+specificity = cm[0, 0] / cm[0].sum()  # NC correctly found
 
 # Statistics
 print(f"\n=== {args.split} set: {len(labels)} images ===")
 print(classification_report(labels, preds, target_names=CLASSES, digits=3))
 print(f"Accuracy:    {accuracy_score(labels, preds):.3f}")
 print(f"Macro-F1:    {f1_score(labels, preds, average='macro'):.3f}")
-print(f"Recall:      {sensitivity:.3f}")
+print(f"Recall:      {recall:.3f}")
 print(f"Specificity: {specificity:.3f}")
 print(f"AUROC:       {roc_auc_score(is_AD, prob_ad):.3f}")
 print(f"Parameters:  {sum(p.numel() for p in model.parameters()):,}")

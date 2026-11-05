@@ -2,7 +2,8 @@
 Trains the GFNet model and save the weights that produce the best validation accuracy
 It saves loss and accuracy curves.
 
-python train.py --data-root /content/ADNI_Processed --epochs 50
+python train.py --data-root /content/ADNI_Processed --epochs 50 
+Minimum 5 epochs
 """
 import argparse
 
@@ -13,6 +14,34 @@ from torch import nn
 from dataset import get_loader
 from modules import GFNet
 
+# Get data and info on running script 
+parser = argparse.ArgumentParser()
+parser.add_argument("--data-root", required=True)
+parser.add_argument("--epochs", type=int, default=50)
+parser.add_argument("--save-path", default="gfnet.pt")
+args = parser.parse_args()
+
+# Use a GPU if possible
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print("Using", device)
+
+# Load data
+train_loader = get_loader(args.data_root, "train", 64)
+val_loader = get_loader(args.data_root, "val", 64)
+
+config = {"dim": 256, "depth": 12, "drop_path_rate": 0.1}
+model = GFNet(**config).to(device)
+
+# Model uses cross entropy loss
+loss_fn = nn.CrossEntropyLoss()
+
+# The model uses ADAM with weight decay
+optimizer = torch.optim.AdamW(model.parameters(), lr = 5e-4 * 64 / 512, weight_decay=0.05)
+warmup = 5
+scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, [
+    torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.01, total_iters=warmup),
+    torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs - warmup),
+], milestones=[warmup])
 
 # Loop for each epoch
 def run_epoch(model, loader, loss_fn, device, optimizer=None):
@@ -40,35 +69,6 @@ def run_epoch(model, loader, loss_fn, device, optimizer=None):
             correct += (outputs.argmax(1) == labels).sum().item()
             count += len(labels)
     return total_loss / count, correct / count
-
-# Get data and info on running script 
-parser = argparse.ArgumentParser()
-parser.add_argument("--data-root", required=True)
-parser.add_argument("--epochs", type=int, default=50)
-parser.add_argument("--save-path", default="gfnet.pt")
-args = parser.parse_args()
-
-# Use a GPU if possible
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print("Using", device)
-
-# Load data
-train_loader = get_loader(args.data_root, "train", 64)
-val_loader = get_loader(args.data_root, "val", 64)
-
-config = {"dim": 256, "depth": 12, "drop_path_rate": 0.1}
-model = GFNet(**config).to(device)
-
-# Model uses cross entropy loss
-loss_fn = nn.CrossEntropyLoss()
-
-# The model uses ADAM with weight decay
-optimizer = torch.optim.AdamW(model.parameters(), lr=5e-4, weight_decay=0.05)
-warmup = 5
-scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, [
-    torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.01, total_iters=warmup),
-    torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs - warmup),
-], milestones=[warmup])
 
 # Keep track of these so plots can be made
 train_losses, val_losses, train_accs, val_accs = [], [], [], []
