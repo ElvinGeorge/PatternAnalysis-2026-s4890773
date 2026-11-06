@@ -14,8 +14,7 @@ def get_loader(data_root, split):
     # The MRI scans are made grayscale and resized to 224x224
     steps = [transforms.Grayscale(1), transforms.CenterCrop(200), transforms.Resize((224, 224))]
     # Training images are augmented to prevent memorisation
-    # Model was run with and without Affine transform and it was found to
-    # significantly improve validation results. (See README.md)
+    # Preprocessing and training steps justified in README.md
     if split == "train":
         steps += [transforms.RandomHorizontalFlip(), transforms.RandomAffine(degrees=15, translate=(0.08, 0.08), scale=(0.9, 1.1))]
     # Scale pixels from [0, 1] to [-1, 1] 

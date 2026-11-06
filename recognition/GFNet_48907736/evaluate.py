@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import torch
 from sklearn.metrics import (ConfusionMatrixDisplay, RocCurveDisplay, accuracy_score, classification_report, confusion_matrix, f1_score, roc_auc_score)
 
-from recognition.GFNet_48907736.dataset import CLASSES, get_loader
-from recognition.GFNet_48907736.modules import load_model
+from dataset import CLASSES, get_loader
+from modules import load_model
 
 # Argument parsing
 parser = argparse.ArgumentParser()
@@ -37,11 +37,13 @@ labels, preds, prob_ad = [], [], [] # Keep track of for stats
 # Predict all images in data loader
 with torch.no_grad():
     for images, y in loader:
+        # Applies a softmax to get P(AD) and P(NC)
         probs = torch.softmax(model(images.to(device)), dim=1).cpu()
         labels += y.tolist()
         preds += probs.argmax(1).tolist()
         prob_ad += probs[:, 1].tolist()
 
+# AD is positive class
 is_AD = [int(y == 1) for y in labels] 
 
 # Confusion matrix
@@ -66,6 +68,7 @@ for (path, _), y, p in zip(loader.dataset.samples, labels, prob_ad):
     scan_probs.setdefault(scan_id, []).append(p)
     scan_true[scan_id] = y
 
+# Group slices by scan
 scan_ids = sorted(scan_probs)
 scan_mean = [sum(scan_probs[s]) / len(scan_probs[s]) for s in scan_ids]
 scan_labels = [scan_true[s] for s in scan_ids]

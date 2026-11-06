@@ -1,6 +1,6 @@
 """
 Split ADNI_Unsplit into test train val by patient. 
-Before using the script, need to have an empty directory:
+Before using the script, need to have an empty directory in form:
 
 ADNI_Processed_2/test/0_NC
 ADNI_Processed_2/test/1_AD
@@ -9,6 +9,7 @@ ADNI_Processed_2/train/1_AD
 ADNI_Processed_2/val/0_NC
 ADNI_Processed_2/val/1_AD
 
+Once that is made, simply run the script, ensuring the file paths below are corrrect
 """
 import os
 import json

@@ -9,6 +9,8 @@ class PatchEmbed(nn.Module):
     """
     Splits the image into 16x16 patches
     It then projects each patch onto a dim-length vector
+    
+    (B, 1, 224, 224) -> (B, 14, 14, dim)
     """
     def __init__(self, dim=256):
         super().__init__()
@@ -20,14 +22,18 @@ class PatchEmbed(nn.Module):
 class ConvStem(nn.Module):
     """
     4 convolutions with stride of 2
+    
+    (B, 1, 224, 224) -> (B, 14, 14, embed_dim)
     """
     def __init__(self, in_chans=1, embed_dim=256):
         super().__init__()
         chans = [in_chans, 32, 64, 128, embed_dim]
         layers = []
+        # Creates 4 convolution layers
         for i in range(4):
             layers += [nn.Conv2d(chans[i], chans[i + 1], 3, stride=2, padding=1, bias=False), nn.BatchNorm2d(chans[i + 1])]
             if i < 3:
+                # No ReLu on last convolution
                 layers.append(nn.ReLU(inplace=True))
         self.proj = nn.Sequential(*layers)
 
@@ -36,7 +42,9 @@ class ConvStem(nn.Module):
     
 class GlobalFilter(nn.Module):
     """
-    Mixes info between all patches by multiplying learned filter in freq space
+    Takes 2D FFT, multiplies by a learned filter, and then takes the inverse FFT
+    
+    (B, h, w, dim) -> (B, h, w, dim)
     """
     def __init__(self, dim, h=14, w=14):
         super().__init__()
@@ -48,7 +56,7 @@ class GlobalFilter(nn.Module):
         dtype = x.dtype
         with torch.autocast(device_type=x.device.type, enabled=False):
             X = torch.fft.rfft2(x.float(), dim=(1, 2), norm="ortho") # Fast fourier transform
-            X = X * torch.view_as_complex(self.complex_weight) 
+            X = X * torch.view_as_complex(self.complex_weight) # Multiply by complex weight
             x = torch.fft.irfft2(X, s=(H, W), dim=(1, 2), norm="ortho") # Inverse fast fourier transform
         return x.to(dtype)
 

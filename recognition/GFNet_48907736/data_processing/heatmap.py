@@ -2,7 +2,7 @@
 This file creates a Grad-CAM and gradient x input visual over any input image using the specified model.
 Note that the model is not in the repo due to the rules.
 
-python heatmap.py --weights GFNet/outputs/gfnet.pt <image location>.jpeg
+python heatmap.py --weights GFNet_model_outputs/gfnet.pt <image location>.jpeg
 """
 import argparse
 
@@ -14,7 +14,7 @@ from torchvision import transforms
 
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from recognition.GFNet_48907736.modules import load_model
+from modules import load_model
 
 parser = argparse.ArgumentParser()
 parser.add_argument("image")

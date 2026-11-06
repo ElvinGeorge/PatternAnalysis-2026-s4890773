@@ -1,12 +1,12 @@
-"""
- python data-analysis.py <ADNI_Unsplit folder> <meta_data_with_label.json>
-    
+"""    
  Checks:
   1. Images, scans and patients per class, each counted directly.
   2. Metadata label agrees with the folder (AD=2, NC=0 in the metadata).
   3. Shows example metadata 'raw' paths so you can see the patient ID by eye.
   4. Every scan's 20 slices are consecutive.
   5. Exact duplicate images (same pixels in two files).
+  
+ python data-analysis.py <ADNI_Unsplit folder> <meta_data_with_label.json>
 """
 
 import collections
