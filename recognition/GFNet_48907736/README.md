@@ -76,9 +76,9 @@ In a clinical setting, a diagnosis is not made over a single slice. It is almost
 During training, it was observed that the last model would be outperformed on models from previous epochs. This is due to overfitting onto the training set and volatility. This is seen in the simple CNN's accuracy curve. In the plot, the validation accuracy experiences large fluctuations. By taking the best model on validation accuracy, it reduces volatility and dependence on the last epoch being good. As a result, for the GFNet, the model taken is the one that produced the highest validation accuracy as well.
 
 **Final Model:**
-The final model uses a Convolutional Stem of [in_chans, 32, 64, 128, embed_dim], Affine Transformation upto 15 degrees, random horizontal flips, cropping to 200x200 pixels, before rescaling and a drop rate at 0.3.
+The final model uses a Convolutional Stem of [in_chans, 32, 64, 128, embed_dim], Affine Transformation up to 15 degrees, random horizontal flips, cropping to 200x200 pixels, before rescaling and a drop rate at 0.3.
 
-**Overall Testing Summary**
+**Overall Testing Summary (On Validation Set)**
 | Trial | Change                                         | Accuracy  | AUROC     | Specificity | Recall (AD) |
 |-------|------------------------------------------------|-----------|-----------|-------------|-------------|
 | 1     | Baseline: patch embed + affine + flip          | 0.783     | 0.865     | 0.792       | 0.775       |
@@ -98,6 +98,8 @@ There are five folders in the main directory. simple_CNN, data_processing, READM
 
 To use the model, first go to train.py and run the script as per the doc string. After running to the desired number of epochs, you will have accuracy and loss plots saved as well as the model. Next, use evaluate.py to run the model on either the validation or test set and produce a confusion matrix, roc curve and a CSV of predictions. Train and evaluate have been split since it allows evaluation to occur on saved weights produced by training. Note that the weights are not in the repo.
 
+More specific info on usage and purpose is within each file.
+
 ## Feasibility Review
 ### User Need, Scope & Acceptance Criteria
 The intended users are clinicians who can use this tool for automated screening to improve productivity and reduce diagnostic errors or misses. The scope will be limited to Alzheimer’s Disease and a positive/negative classification with confidence, using just MRI scans.  
@@ -106,7 +108,7 @@ The intended users are clinicians who can use this tool for automated screening 
 
 -	Handling: For all high confidence negatives, a negative case should be reported. For medium or high confidence positives, a positive case should be reported, and further testing commence. For any medium confidence negatives, or any low confidence result, there should be a human review process.
 
--	False negatives: Maximising recall is the primary focus. This is because a false negative leads to undetected AD, whilst a false positive leads to an unneeded test. The model will have be considered successful if it can achieve a recall greater than 80%.
+-	False negatives: Maximising recall is the primary focus. This is because a false negative leads to undetected AD, whilst a false positive leads to an unneeded test. The model will be considered successful if it can achieve a recall greater than 80%.
 
 -	Overall positives: Although maximising recall is the primary focus, false positives lead to unnecessary health scares and follow up tests, causing strain on the healthcare system. Thus, it is important the specificity is greater than 80%.
 
@@ -121,7 +123,7 @@ A typical CNN will be chosen for the baseline. This is since this task is fundam
 This is feasible and has been done before as stated in the previous section. The data itself is not split by patient yet, and this will have to be done to prevent data leakage. With an A100 and using the ADNI dataset, a GFNet is estimated to take less than 3hrs to train, while a CNN would be at most 30m (estimates from previous runs I have done). I have access to an A100 so there are no issues with resources.
 
 ### Risks, Budget & Fallback
-I have 80 computing credits with Google Collab, and also free access to UQ’s Rangpur Cluster. This will give me access to A100s and other GPUs to train on. The primary risk of either model is data leakage due to patients not being kept together on datasets, leading to overconfidence and inflated accuracy scores. If GFNets do not work, I can try a ConvNeXt instead.
+I have 80 computing credits with Google Colab, and also free access to UQ’s Rangpur Cluster. This will give me access to A100s and other GPUs to train on. The primary risk of either model is data leakage due to patients not being kept together on datasets, leading to overconfidence and inflated accuracy scores. If GFNets do not work, I can try a ConvNeXt instead.
 
 ## Dependencies and Reproducibility
 ### Dependencies
@@ -144,7 +146,7 @@ As a whole, if the scripts were run again on any capable GPU, the results achiev
 
 ## Example Inputs and Outputs and Plots
 ### True Positive Case:
-The input was a AD brain MRI\
+The input was an AD brain MRI\
 **IMAGE ID:** 258598_90\
 ![True Positive](README_images/predictions/true-positive-258598_90.jpeg)\
 **Prediction made:** AD\
@@ -183,15 +185,15 @@ As stated above, there were 1803 images that were true negatives (39.20%), 1878 
 
 ### Accuracy Curve
 ![Accuracy Curve](GFNet_model_outputs/GFNet_accuracy_curve.png)\
-By the end of training, the model reached a validation accuracy of 83.9%, and a training accuracy of 98.9%.
+By the end of training, the model reached a validation accuracy of 83.9% and a training accuracy of 99.4%. The saved model is from epoch 23, which had the highest validation accuracy (86.4%).
 
 ### ROC Curve
 ![ROC Curve](GFNet_model_outputs/GFNet_roc_curve.png)\
-By the end of training, the model reached a AUROC of accuracy of 0.881
+On the test set, the saved model reached an AUROC of 0.881.
 
 ### Loss Curve
 ![Loss Curve](GFNet_model_outputs/GFNet_loss_curve.png)\
-The model seems to be overfitting since after epoch 23, validation loss keeps climbing despite training loss going down. Fortunately, since the model taken is the one that performs the best on the validation set (rather than the last one), the final model is not overfit.
+The model seems to be overfitting since after epoch 23, validation loss keeps climbing despite training loss going down. Fortunately, since the model taken is the one that performs the best on the validation set (rather than the last one), the final model is not as overfit.
 
 ## Preprocessing and Data Split
 ### Dataset
@@ -203,7 +205,7 @@ AD: images=14860 scans=743 patients=221
 NC: images=15660 scans=783 patients=459
 total patients: 680 total scans: 1526 total images: 30520
 
-In total, there are 680 patients who have produced 1526 scans. Each scan has 20 slices, giving 30520 slices in total. Futher investigation also showed that every patient only went to one location. There is a class imbalance when it come to AD patients vs NC patients, where only 32.5% of patients have AD. This was not seen in number of AD slices vs number of NC slices since AD patients, on average, get more scans each. 
+In total, there are 680 patients who have produced 1526 scans. Each scan has 20 slices, giving 30520 slices in total. Further investigation also showed that every patient only went to one location. There is a class imbalance when it come to AD patients vs NC patients, where only 32.5% of patients have AD. This was not seen in number of AD slices vs number of NC slices since AD patients, on average, get more scans each. 
 
 ### Pre-Processing
 The AD images were pooled and so were the NC images. After that, all the images in either set were grouped by patient and then randomly split between test train and validation sets. The split was stratified to ensure similar proportions of AD and NC patients across all six groups of images.
@@ -266,7 +268,7 @@ The GFNet has 7,446,754 parameters compared to only 389,314 on the baseline CNN.
 **Prediction:** AD\
 **P(AD):** 0.985
 
-The cortex looks thin on the right although this half of the slice is much darker, which is unusual. The gradient x input is on the cerebellum and brainstem. Grad-CAM has a large spot on the bottom left on the image onto the background. This is also unusual and indicates the model has found a shortcut by using the background instead of the brain.
+The cortex looks thin on the right although this half of the slice is much darker, which is unusual. The gradient x input is on the cerebellum and brainstem. Grad-CAM has a large spot on the bottom left on the image onto the background. This is also unusual and indicates the model has found a shortcut by using the background instead of the brain. This will be further investigated in the Overall Autopsy Takeaway and Recommendations.
 
 #### Medium Confidence False Positive
 **IMAGE ID**: 1291468_98\
@@ -275,7 +277,7 @@ The cortex looks thin on the right although this half of the slice is much darke
 **Prediction:** AD\
 **P(AD):** 0.702
 
-Similar to the previous false positive, the Grad-CAM shows that the model is looking into the black background. Gradient x input is spread over the cerebelleum, brainstem and lower cortex. There is no focus on the ventricle or sulci. This once again points to the model using a shortcut instead of analysing the brain scan.
+Similar to the previous false positive, the Grad-CAM shows that the model is looking into the black background, with a particular focus on a spot on the left. Gradient x input is spread over the cerebellum, brainstem and lower cortex. There is no focus on the ventricle or sulci. This once again points to the model using a shortcut instead of analysing the brain scan.
 
 #### High Confidence False Negative
 **IMAGE ID**: 1061844_108\
@@ -284,7 +286,7 @@ Similar to the previous false positive, the Grad-CAM shows that the model is loo
 **Prediction:** NC\
 **P(AD):** 0.006
 
-Unlike the previous false positives, Grad-CAM now shows that the model is looking into the brain. The Grad-CAM shows the model looking into the cerebellum, but also some regions of the background. Gradient x input also shows the model is very focused on the brainstem.
+Unlike the previous false positives, Grad-CAM now shows that the model is looking into the brain such as the cerebellum. It also looks like there are some regions of the background which the model is again looking at. Gradient x input also shows the model is very focused on the brainstem, but not the ventricles or sulci.
 
 #### Medium Confidence False Negative
 **IMAGE ID**: 344365_94\
@@ -293,14 +295,14 @@ Unlike the previous false positives, Grad-CAM now shows that the model is lookin
 **Prediction:** NC\
 **P(AD):** 0.303
 
-Grad-CAM shows the model is looking into the brain, however there is a large spot on the top right. This focus onto the background once again indicates a shortcut. Gradient x input is spread over the white matter around the lateral ventricle. There is some evidence of AD, however, because of the likely shortcut the model tried to take, it predicted NC.
+Grad-CAM shows the model is looking into the brain, however there is a large spot on the top right background. This focus onto the background once again indicates a shortcut. Gradient x input is spread over the white matter around the lateral ventricle. There is some evidence of AD, however, because of the likely shortcut the model tried to take, it predicted NC. This shortcut will be investigated.
 
 ### Overall Autopsy Takeaway and Recommendations
-There is a systematic failure within the test set. All 5 AD scans with a 20 slice window starting at slice 90 or later are false negatives. Meanwhile, 44 of the 45 late-window NC scans are correct. Only 5 of the 121 test AD scans start at slice 90 or later, compared to 45 of the 109 test NC scans. It is possible that the model has learnt to recognise late slices, and associate that with NC. This would explain why it got all the late AD scans wrong.
+There is a systematic failure within the test set. For every scan, the level within the brain it can start differs. All 5 AD scans with their 20 slice window starting at slice 90 or later are false negatives. Meanwhile, 44 of the 45 late-window NC scans are correct. Only 5 of the 121 test AD scans start at slice 90 or later, compared to 45 of the 109 test NC scans. It is possible that the model has learnt to recognise late slices and associate that with NC. The reason why the model would do this is since late scans are overwhelmingly NC. This would explain why it got all the late AD scans wrong.
 
 In all four heatmaps, Grad-CAM shows that the model is looking into the black background or edges of the brain. This means the model is using the size of the brain rather than just the brain tissue. Although center cropping is done, masking should also be implemented to remove this background even more.
 
-Scan averaging fixes slice errors. Although the High Confidence False Positive and Medium Confidence False Negative were wrong at slice levels, they were correctly predicted at the scan level. This strengthens the case to look at a scan level instead of a slice level.
+Scan averaging can fix slice errors. Although the High Confidence False Positive and Medium Confidence False Negative were wrong at slice levels, they were correctly predicted at the scan level. This strengthens the case to look at a scan level instead of a slice level.
 
 ### Recommendations and Trade-Offs
 **Background Masking:**
@@ -343,7 +345,7 @@ This table categorises every prediction made in the test set as either high conf
 
 The table shows that when the model predicts AD, it is correct 94.3% of the time when it has high confidence, but only 60.6% of the time with low confidence. When it predicts NC, it is correct 86.9% of the time when it has high confidence, but only 53.3% of the time when it has low confidence. 
 
-It is evident that low confidence NC, low confidence AD and medium confidence NC predictions should be should be directed for human review. The is because by routing low confidence and medium confidence NC predictions to clinicians, only high confidence NC predictions will be made by the model. This will significantly reduce the number of misses. Low confidence AD should also be routed since the accuracy is only 60.6%. Therefore, by getting a clinican to assess them, the number of false positives can be significantly reduced. Doing this would mean 1425 of the 4600 slices would be routed (30.98%), which still means the model can classify more than two thirds of slices.
+It is evident that low confidence NC, low confidence AD and medium confidence NC predictions should be directed for human review. The is because by routing low confidence and medium confidence NC predictions to clinicians, only high confidence NC predictions will be made by the model. This will significantly reduce the number of misses. Low confidence AD should also be routed since the accuracy is only 60.6%. Therefore, by getting a clinican to assess them, the number of false positives can be significantly reduced. Doing this would mean 1425 of the 4600 slices would be routed (30.98%), which still means the model can classify more than two thirds of slices.
 
 Furthermore, as seen in [Reasoning Behind the Model](#reasoning-behind-the-model) and [Benchmarking Against CNN](#benchmarking-against-cnn), the model performs better on scan level predictions compared to slice level. At a slice level, it has an accuracy of 80.00%, but at a scan level, it is 86.50%. Since there are less false positives and negatives, there would be even less scans that must be directed to clinicians since the accuracy at each confidence level will be greater.
 

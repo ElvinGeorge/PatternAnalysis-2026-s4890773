@@ -2,7 +2,7 @@
 Trains the GFNet model and save the weights that produce the best validation accuracy
 It saves loss and accuracy curves.
 
-python train.py --data-root /content/ADNI_Processed --epochs 50 
+python train.py --data-root /content/ADNI_Processed --epochs 100 
 Minimum 5 epochs
 """
 import argparse

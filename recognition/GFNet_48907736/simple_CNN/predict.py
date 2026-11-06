@@ -1,6 +1,6 @@
 """
 Makes predictions using a given model for any given image
-For heatmaps, use recognition\GFNet_48907736\data_processing\heatmap.py
+For heatmaps, use recognition/GFNet_48907736/data_processing/heatmap.py
 
 python predict.py --weights cnn.pt image1.jpeg image2.jpeg
 """

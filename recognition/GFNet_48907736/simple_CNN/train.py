@@ -2,7 +2,7 @@
 Trains the CNN model and save the weights that produce the best validation accuracy
 It saves loss and accuracy curves.
 
-python train.py --data-root "C:/Users/elvin/OneDrive/Desktop/UQ/Year 3, Semester 2/COMP3710/Final Project/ADNI_Processed" --epochs 20
+python train.py --data-root "C:/Users/elvin/OneDrive/Desktop/UQ/Year 3, Semester 2/COMP3710/Final Project/ADNI_Processed" --epochs 100
 """
 import argparse
 
