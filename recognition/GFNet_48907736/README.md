@@ -4,6 +4,7 @@
   - [Table of Contents](#table-of-contents)
   - [The Algorithm](#the-algorithm)
   - [Reasoning Behind the Model](#reasoning-behind-the-model)
+  - [Usage and How to Run the Code](#usage-and-how-to-run-the-code)
   - [Feasibility Review](#feasibility-review)
     - [User Need, Scope \& Acceptance Criteria](#user-need-scope--acceptance-criteria)
     - [Model Choice \& Course Concepts](#model-choice--course-concepts)
@@ -20,6 +21,7 @@
     - [Confusion Matrix](#confusion-matrix)
     - [Accuracy Curve](#accuracy-curve)
     - [ROC Curve](#roc-curve)
+    - [Loss Curve](#loss-curve)
   - [Preprocessing and Data Split](#preprocessing-and-data-split)
     - [Dataset](#dataset)
     - [Pre-Processing](#pre-processing)
@@ -35,6 +37,7 @@
     - [Overall Autopsy Takeaway and Recommendations](#overall-autopsy-takeaway-and-recommendations)
     - [Recommendations and Trade-Offs](#recommendations-and-trade-offs)
     - [Answering The Open Research Question](#answering-the-open-research-question)
+  - [Reference List](#reference-list)
   - [Artificial Intelligence Usage Disclosure](#artificial-intelligence-usage-disclosure)
 
 ## The Algorithm
@@ -88,7 +91,12 @@ The final model uses a Convolutional Stem of [in_chans, 32, 64, 128, embed_dim],
 | 8     | Conv stem + increased affine + CenterCrop(200) | **0.863** | **0.932** | 0.870       | 0.856       |
 | 9     | Trial 8 without flip                           | 0.853     | 0.915     | 0.861       | 0.845       |
 
-Based off the above metrics, trial 8 produces the best model
+Based on the above metrics, trial 8 produces the best model
+
+## Usage and How to Run the Code
+There are three four folders in the main directory. simple_CNN, GFNet, data_processing and README_images. README_images is used just to store images for the README file. data_processing contains scripts for analysing and splitting the dataset, as well as creating heatmaps. simple_CNN and GFNet are both the models. In each, there are the 5 fundamental files: dataset.py, evaluate.py, modules.py, predict.py, train.py. There is also an outputs folder, and for GFNet, an additional folder of outputs from different experiments. 
+
+To use the model, first go to train.py and run the script as per the doc string. After running to the desired number of epochs, you will have accuracy and loss plots saved as well as the model. Next, use evaluate.py to run the model on either the validation or test set and produce a confusion matrix, roc curve and a CSV of predictions. Train and evaluate have been split since it allows evaluation to occur on saved weights produced by training. Note that the weights are not in the repo.
 
 ## Feasibility Review
 ### User Need, Scope & Acceptance Criteria
@@ -181,6 +189,9 @@ By the end of training, the model reached a validation accuracy of 83.9%, and a 
 ![ROC Curve](GFNet/final_model_outputs/GFNet_roc_curve.png)\
 By the end of training, the model reached a AUROC of accuracy of 0.881
 
+### Loss Curve
+![Loss Curve](GFNet/final_model_outputs/GFNet_loss_curve.png)\
+The model seems to be overfitting since after epoch 23, validation loss keeps climbing despite training loss going down. Fortunately, since the model taken is the one that performs the best on the validation set (rather than the last one), the final model is not overfit.
 
 ## Preprocessing and Data Split
 ### Dataset
@@ -192,7 +203,7 @@ AD: images=14860 scans=743 patients=221
 NC: images=15660 scans=783 patients=459
 total patients: 680 total scans: 1526 total images: 30520
 
-In total, there are 680 patients who have produced 1526 scans. Each scan has 20 slices, giving 30520 slices in total. There is a class imbalance when it come to AD patients vs NC patients, where only 32.5% of patients have AD. This was not seen in AD slices vs NC slices since AD patients, on average, get more scans each. 
+In total, there are 680 patients who have produced 1526 scans. Each scan has 20 slices, giving 30520 slices in total. Futher investigation also showed that every patient only went to one location. There is a class imbalance when it come to AD patients vs NC patients, where only 32.5% of patients have AD. This was not seen in number of AD slices vs number of NC slices since AD patients, on average, get more scans each. 
 
 ### Pre-Processing
 The AD images were pooled and so were the NC images. After that, all the images in either set were grouped by patient and then randomly split between test train and validation sets. The split was stratified to ensure similar proportions of AD and NC patients across all six groups of images.
@@ -221,7 +232,17 @@ Both models were evaluated on the same test set of 4600 images. Both models were
 | Scan macro-F1          | 0.839        | **0.865** |
 | Scan AUROC             | 0.903        | **0.932** | 
 
+
 The GFNet outperforms the CNN on every metric. It improves slice accuracy by 2.5 percentage points, from 77.5% to 80.00% and slice AUROC by 0.027 from 0.854 to 0.881. Recall improves from 76.9% to 77.6% and specificity improves from 78.3% to 82.7%. At a scan level, these improvements are seen again. Scan accuracy is improved by 2.60 percentage points from 83.9% to 86.5%, and scan AUROC improves by 0.029 from 0.903 to 0.932.
+
+| Model | Class | Precision | Recall |
+|-------|-------|-----------|--------|
+| GFNet | NC    | 0.769     | 0.827  |
+|       | AD    | 0.833     | 0.776  |
+| CNN   | NC    | 0.753     | 0.783  |
+|       | AD    | 0.797     | 0.769  |
+
+Based on per class precision, the GFNet performs better at 0.769 versus 0.753 for NC slices and better at 0.833 versus 0.797 for AD slices. For per class recall, the GFNet performs better at 0.827 versus 0.783 for NC, and better at 0.776 versus 0.769 for AD slices.
 
 Overall, it is evident the GFNet is superior in classifying AD vs NC brain MRIs. This difference in performance is very valuable since the increased specificity and recall mean less missed diagnosis from false negatives, and less wastage of hospital resources from false positives.
 
@@ -286,7 +307,7 @@ Scan averaging fixes slice errors. Although the High Confidence False Positive a
 As discussed in the autopsy takeaway and recommendation, it is likely that the background allows inference of slice position. This allows the model to form a shortcut depending on how confident it is of the slice position. Later slices are more likely to be NC, whilst earlier slices, AD. As a result, by adding background masking and then scaling the image, the model will no longer be able to look at the background. Instead, its prediction must come from the brain tissue.
 
 **Accuracy vs Cost:**
-Although the GFNet has an accuracy 2.25 percentage points higher (from 77.5% to 80.00%), this comes at the cost of ~19x more parameters and ~1.8x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 1.57ms per slice, it could process 1911 scans a minute which is more than enough. Additionally, the increase in specificity from 78.3% to 82.7% is significant since it directly means there are less false positives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 76.9% to 77.6% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
+Although the GFNet has an accuracy 2.5 percentage points higher (from 77.5% to 80.00%), this comes at the cost of ~19x more parameters and ~1.8x the inference time. Despite this, the GFNet still remains the better option. This is because with an inference time 1.57ms per slice, it could process 1911 scans a minute which is more than enough. Additionally, the increase in specificity from 78.3% to 82.7% is significant since it directly means there are less false positives and a reduction in time and resources spent on unnecessary testing. The increase in recall from 76.9% to 77.6% also means that there is a reduction in false negatives, meaning less patients with AD are missed.
 
 **Decision Threshold:**
 The decision threshold is currently set as P(AD) > 0.5. This is a tradeoff since by decreasing it, although there will be less false negatives, there will be more false positives. False positives, however, are far less impactful than false negatives since they just lead to extra testing (as compared to a missed diagnosis). Thus, the decision threshold should be lowered. The high AUROC supports this trade-off, so the threshold should be reduced based on the resources available to handle false positives.
@@ -327,6 +348,12 @@ It is evident that low confidence NC, low confidence AD and medium confidence NC
 Furthermore, as seen in [Reasoning Behind the Model](#reasoning-behind-the-model) and [Benchmarking Against CNN](#benchmarking-against-cnn), the model performs better on scan level predictions compared to slice level. At a slice level, it has an accuracy of 80.00%, but at a scan level, it is 86.50%. Since there are less false positives and negatives, there would be even less scans that must be directed to clinicians since the accuracy at each confidence level will be greater.
 
 Using this advanced model over the baseline CNN is worth the extra computation as the computational difference is minor, as justified in [Computational Efficiency](#computational-efficiency), but the benefits are substantial, as justified in [Benchmarking Against CNN](#benchmarking-against-cnn)
+
+## Reference List
+Kiran vutukuri. (2025, October 15). 19.Model evaluation basics: Train, validation, and test splits. Medium. https://medium.com/@kiranvutukuri/19-model-evaluation-basics-train-validation-and-test-splits-ed5bb26b088d
+
+Y. Rao, W. Zhao, Z. Zhu, J. Lu, and J. Zhou, “Global filter networks for image classification,”
+IEEE Trans. Pattern Anal. Mach. Intell., vol. 45, no. 6, pp. 7837–7850, 2023.
 
 ## Artificial Intelligence Usage Disclosure 
 **gfnet_pipeline.png**\
