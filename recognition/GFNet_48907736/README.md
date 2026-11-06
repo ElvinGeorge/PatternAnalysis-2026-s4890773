@@ -52,7 +52,7 @@ The algorithm is based on Y. Rao, W. Zhao, Z. Zhu, J. Lu, and J. Zhou, “Global
 The model works in four primary stages. First, it takes an input image, crops it to 200x200, resizes it to 224x224 and passes it through a convolutional stem. This consists of four 3x3 convolutions that produce an output of 256 channels which each are 14x14. The next step is global filtering. Each of the 12 GFNet blocks applies a LayerNorm, applies a fast fourier transform, multiplies by a learned complex weight and applies an inverse fast fourier transform. The next step is channel mixing. Inside the same block, another LayerNorm and two layer MLP mix information across channels for each token. The whole block is wrapped in a residual connection as well. Finally, classification happens. This is done after all 12 blocks and their output is normalised into one 256-dimensional vector. A linear layer maps it to either AD or NC and softmax is used to give P(AD) and P(NC).
 
 ## Reasoning Behind the Model
-For the following section, trials refer to the trials in recognition\GFNet_48907736\GFNet\model_tuning
+For the following section, trials refer to the trials in GFNet_model_tuning
 
 **Cropping:**
 Cropping to 200x200, before rescaling it to 224x224 was done because it was found to improve validation accuracy. The dimension of 200x200 was chosen since it safely did that without cropping the brain for any slice. Between trial 7 and 8, one of the key changes made was added this cropping before rescaling. This, alongside increasing the Affine Transformation strength, improved validation accuracy from 0.813 to 0.863. It is likely that cropping improved model performance since it significantly reduced the proportion of the image that was empty space, giving the model more focus on the brain.
@@ -94,7 +94,7 @@ The final model uses a Convolutional Stem of [in_chans, 32, 64, 128, embed_dim],
 Based on the above metrics, trial 8 produces the best model
 
 ## Usage and How to Run the Code
-There are three four folders in the main directory. simple_CNN, GFNet, data_processing and README_images. README_images is used just to store images for the README file. data_processing contains scripts for analysing and splitting the dataset, as well as creating heatmaps. simple_CNN and GFNet are both the models. In each, there are the 5 fundamental files: dataset.py, evaluate.py, modules.py, predict.py, train.py. There is also an outputs folder, and for GFNet, an additional folder of outputs from different experiments. 
+There are five folders in the main directory. simple_CNN, data_processing, README_images, GFNet_model_tuning and GFNet_model_outputs. README_images is used just to store images for the README file. data_processing contains scripts for analysing and splitting the dataset, as well as creating heatmaps. simple_CNN contains the files and outputs for the baseline model. GFNet_model_outputs contains the GFNet's outputs and GFNet_model_tuning contains outputs from different experiments. In the main directory, there are the 5 fundamental files: dataset.py, evaluate.py, modules.py, predict.py, train.py and README.md. The first five create the GFNet, and the last one is the report.
 
 To use the model, first go to train.py and run the script as per the doc string. After running to the desired number of epochs, you will have accuracy and loss plots saved as well as the model. Next, use evaluate.py to run the model on either the validation or test set and produce a confusion matrix, roc curve and a CSV of predictions. Train and evaluate have been split since it allows evaluation to occur on saved weights produced by training. Note that the weights are not in the repo.
 
@@ -178,19 +178,19 @@ The input was a AD brain MRI\
 There were 542 images that were false negatives (11.78%)
 
 ### Confusion Matrix 
-![Confusion Matrix](GFNet/final_model_outputs/GFNet_confusion_matrix.png)\
+![Confusion Matrix](GFNet_model_outputs/GFNet_confusion_matrix.png)\
 As stated above, there were 1803 images that were true negatives (39.20%), 1878 images that were true positives (40.83%), 377 images that were false positives (8.20%) and 542 images that were false negatives (11.78%).
 
 ### Accuracy Curve
-![Accuracy Curve](GFNet/final_model_outputs/GFNet_accuracy_curve.png)\
+![Accuracy Curve](GFNet_model_outputs/GFNet_accuracy_curve.png)\
 By the end of training, the model reached a validation accuracy of 83.9%, and a training accuracy of 98.9%.
 
 ### ROC Curve
-![ROC Curve](GFNet/final_model_outputs/GFNet_roc_curve.png)\
+![ROC Curve](GFNet_model_outputs/GFNet_roc_curve.png)\
 By the end of training, the model reached a AUROC of accuracy of 0.881
 
 ### Loss Curve
-![Loss Curve](GFNet/final_model_outputs/GFNet_loss_curve.png)\
+![Loss Curve](GFNet_model_outputs/GFNet_loss_curve.png)\
 The model seems to be overfitting since after epoch 23, validation loss keeps climbing despite training loss going down. Fortunately, since the model taken is the one that performs the best on the validation set (rather than the last one), the final model is not overfit.
 
 ## Preprocessing and Data Split

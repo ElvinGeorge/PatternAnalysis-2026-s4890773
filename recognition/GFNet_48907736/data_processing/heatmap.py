@@ -14,7 +14,7 @@ from torchvision import transforms
 
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from GFNet.modules import load_model
+from recognition.GFNet_48907736.modules import load_model
 
 parser = argparse.ArgumentParser()
 parser.add_argument("image")

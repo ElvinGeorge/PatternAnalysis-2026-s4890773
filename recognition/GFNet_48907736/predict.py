@@ -10,8 +10,8 @@ import torch
 from PIL import Image
 from torchvision import transforms
 
-from dataset import CLASSES
-from modules import load_model
+from recognition.GFNet_48907736.dataset import CLASSES
+from recognition.GFNet_48907736.modules import load_model
 import os
 import matplotlib.pylab as plt
 import csv

@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import torch
 from sklearn.metrics import (ConfusionMatrixDisplay, RocCurveDisplay, accuracy_score, classification_report, confusion_matrix, f1_score, roc_auc_score)
 
-from dataset import CLASSES, get_loader
-from modules import load_model
+from recognition.GFNet_48907736.dataset import CLASSES, get_loader
+from recognition.GFNet_48907736.modules import load_model
 
 # Argument parsing
 parser = argparse.ArgumentParser()
